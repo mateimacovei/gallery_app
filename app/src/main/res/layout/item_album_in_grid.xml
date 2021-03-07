@@ -7,11 +7,11 @@
 
     <TextView
         android:id="@+id/albumNameTextView"
-        android:layout_width="415dp"
-        android:layout_height="40dp"
+        android:layout_width="410dp"
+        android:layout_height="26dp"
         android:gravity="center"
         android:text="Album title here"
-        android:textSize="18sp"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,13 +23,14 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="Album count here"
+        android:textSize="8sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/albumNameTextView" />
 
     <ImageView
         android:id="@+id/imageViewAlbum"
-        android:padding="1dp"
+        android:padding="3dp"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintDimensionRatio="1:1"

@@ -1,14 +1,18 @@
 package com.example.gallery_app.activities
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.IntentSender.SendIntentException
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.provider.MediaStore
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -29,6 +33,7 @@ private const val DEBUG_TAG = "Gestures"
 class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var fullscreenContent: ImageView
     private lateinit var fullscreenContentControls: LinearLayout
+    private lateinit var picture: MyPhoto
     private val hideHandler = Handler()
 
     @SuppressLint("InlinedApi")
@@ -97,8 +102,10 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById<Button>(R.id.dummy_button).setOnTouchListener(delayHideTouchListener)
-        val picture: MyPhoto = Box.Get(intent, FULLSCREEN_IMAGE_MESSAGE)
+//        findViewById<Button>(R.id.dummy_button).setOnTouchListener(delayHideTouchListener)
+        //TO DO
+        picture = Box.Get(intent, FULLSCREEN_IMAGE_MESSAGE)
+        this.title = picture.name
         Box.Remove(intent)
 
 
@@ -204,7 +211,7 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
         private const val UI_ANIMATION_DELAY = 300
         //if I have this lower that 300, the image will not re-center when the upper bar is hidden
 
-        private const val VELOCITY_THRESHOLD: Long = 3000
+        private const val VELOCITY_THRESHOLD: Long = 1000
         //TO DO: adjust this
     }
 
@@ -244,10 +251,11 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
         velocityY: Float
     ): Boolean {
         Log.i("Gestures", "onFling called")
-//        if (Math.abs(velocityX) < VELOCITY_THRESHOLD
-//                && Math.abs(velocityY) < VELOCITY_THRESHOLD) {
-//            return false //if the fling is not fast enough then it's just like drag
-//        }
+        if (Math.abs(velocityX) < VELOCITY_THRESHOLD
+            && Math.abs(velocityY) < VELOCITY_THRESHOLD
+        ) {
+            return false //if the fling is not fast enough then it's just like drag
+        }
 
         if (Math.abs(velocityX) > Math.abs(velocityY)) {
             if (velocityX >= 0) {
@@ -271,6 +279,32 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
         }
 
         return true
+    }
+
+    fun leftChipClicked(view: View) {
+        val uri = picture.uri
+
+        val editIntent = Intent(Intent.ACTION_EDIT)
+        editIntent.setDataAndType(uri, "image/*")
+        editIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        startActivity(Intent.createChooser(editIntent, null))
+    }
+
+    fun middleChipClicked(view: View) {
+        val uri = picture.uri
+
+        val sharingIntent = Intent(Intent.ACTION_SEND)
+        sharingIntent.type = "image/*"
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, uri)
+        startActivity(Intent.createChooser(sharingIntent, "Share image using"))
+
+    }
+
+    fun rightChipClicked(view: View) {
+        Toast.makeText(this, "TO IMPLEMENT: DELETE", Toast.LENGTH_LONG).show()
+
+        val uri = picture.uri
+//        contentResolver.delete(uri, null, null)
     }
 
 }

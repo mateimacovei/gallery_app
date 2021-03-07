@@ -42,6 +42,7 @@ class AlbumGridActivity : AppCompatActivity(),
         }
 
         this.onConfigurationChanged(this.resources.configuration)
+        this.title = "Albums"
     }
 
     override fun onBackPressed() {
@@ -82,9 +83,9 @@ class AlbumGridActivity : AppCompatActivity(),
         if (selectionMode) {
             colorViewHolder.reverseSelection()
         } else {
-            val pictures = colorViewHolder.album.photos
+            val album = colorViewHolder.album
             val intentImageGrid = Intent(this, ImageGridActivity::class.java)
-            Box.Add(intentImageGrid, IMAGE_GRID_MESSAGE,pictures)
+            Box.Add(intentImageGrid, IMAGE_GRID_MESSAGE,album)
             this.startActivity(intentImageGrid)
         }
     }

@@ -32,8 +32,8 @@ class MainActivity : AppCompatActivity() {
 
         requestPermissions()
 
-//        val intentAlbumGrid = Intent(this,AlbumGridActivity::class.java)
-//        this.startActivity(intentAlbumGrid)
+        val intentAlbumGrid = Intent(this,AlbumGridActivity::class.java)
+        this.startActivity(intentAlbumGrid)
     }
 
 

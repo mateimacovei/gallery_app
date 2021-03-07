@@ -71,7 +71,7 @@ class StaticMethods {
                             HEIGHT = height
                         ))
                     else
-                        Log.w("Files","failed null-check in getAllPictures(): data: $data | uri:$uri")
+                        Log.w("Files","load failed : failed null-check in getAllPictures(): data: $data | uri:$uri")
                 }
             } else
                 Log.i("Files", "cursor is null")

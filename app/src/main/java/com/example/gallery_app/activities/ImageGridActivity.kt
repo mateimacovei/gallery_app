@@ -18,6 +18,7 @@ import com.example.gallery_app.adapter.ImageGridAdapter
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhoto
+import com.example.gallery_app.storageAccess.MyPhotoAlbum
 import kotlinx.android.synthetic.main.activity_image_grid.*
 
 
@@ -44,7 +45,10 @@ class ImageGridActivity : AppCompatActivity(),
 //        val pictures = ArrayList<MyPhoto>()
 //        pictures.add(picture)
 
-        val pictures: ArrayList<MyPhoto> = Box.Get(intent, IMAGE_GRID_MESSAGE)
+        val album : MyPhotoAlbum = Box.Get(intent, IMAGE_GRID_MESSAGE)
+        this.title=album.albumName
+
+        val pictures: ArrayList<MyPhoto> = album.photos
         Box.Remove(intent)
 
         Log.i("Files", "after getting pictures from intent in ImageGridActivity")
@@ -136,9 +140,6 @@ class ImageGridActivity : AppCompatActivity(),
 
                 val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
                 Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_MESSAGE, colorViewHolder.myPhoto)
-
-//                val intentFullScreenImage = Intent(this, MyFullscreenPictureActivity::class.java)
-//                Box.Add(intentFullScreenImage, MT_FULLSCREEN_IMAGE_MESSAGE, colorViewHolder.myPhoto)
 
                 this.startActivity(intentFullScreenImage)
             }
