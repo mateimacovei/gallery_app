@@ -86,6 +86,13 @@ class ImageGridActivity : AppCompatActivity(),
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
+//        val v: View? = recycleViewerForImages.layoutManager?.getChildAt(1)
+//        var offset=0
+//        if(v!=null)
+//            offset= v.top
+
+//        Log.i("GRID","offset: $offset")
+
         when (newConfig.orientation) {
             ORIENTATION_PORTRAIT -> recycleViewerForImages.layoutManager =
                 StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
