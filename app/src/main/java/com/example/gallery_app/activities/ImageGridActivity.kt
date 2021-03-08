@@ -11,9 +11,7 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.example.gallery_app.FULLSCREEN_IMAGE_MESSAGE
-import com.example.gallery_app.IMAGE_GRID_MESSAGE
-import com.example.gallery_app.R
+import com.example.gallery_app.*
 import com.example.gallery_app.adapter.ImageGridAdapter
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
 import com.example.gallery_app.storageAccess.Box
@@ -25,7 +23,8 @@ import kotlinx.android.synthetic.main.activity_image_grid.*
 class ImageGridActivity : AppCompatActivity(),
     ImageItemClickListener {
     var selectionMode: Boolean = false
-    val holders: ArrayList<ImageGridAdapter.ColorViewHolder> = ArrayList()
+    val holderImages: ArrayList<ImageGridAdapter.ImageColorViewHolder> = ArrayList()
+    lateinit var album: MyPhotoAlbum
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,19 +44,21 @@ class ImageGridActivity : AppCompatActivity(),
 //        val pictures = ArrayList<MyPhoto>()
 //        pictures.add(picture)
 
-        val album : MyPhotoAlbum = Box.Get(intent, IMAGE_GRID_MESSAGE)
-        this.title=album.albumName
-
-        val pictures: ArrayList<MyPhoto> = album.photos
+        album = Box.Get(intent, IMAGE_GRID_MESSAGE)
         Box.Remove(intent)
 
-        Log.i("Files", "after getting pictures from intent in ImageGridActivity")
-//        val message = intent?.extras?.getString(IMAGE_GRID_MESSAGE).toString()
+        this.title=album.albumName
+        loadPicturesFromAlbum()
 
+        this.onConfigurationChanged(this.resources.configuration)
 
-//        val pictures = ImageStorageAccess.getAllPictures(this)
-//        Toast.makeText(this, "Found ${pictures.size} pictures. Message: $message", Toast.LENGTH_LONG).show()
+//        supportActionBar.
+//        supportActionBar?.isHideOnContentScrollEnabled = true
+        Log.i("Activity", "onCreate exit")
+    }
 
+    private fun loadPicturesFromAlbum(){
+        val pictures: ArrayList<MyPhoto> = album.photos
         var i = 0
         while (i < pictures.size && !selectionMode) {
             selectionMode = pictures[i].selected
@@ -66,18 +67,13 @@ class ImageGridActivity : AppCompatActivity(),
         val iga = ImageGridAdapter(this, pictures)
         iga.setClickListener(this)
         recycleViewerForImages.adapter = iga
-
-        this.onConfigurationChanged(this.resources.configuration)
-
-//        supportActionBar.
-//        supportActionBar?.isHideOnContentScrollEnabled = true
     }
 
     override fun onBackPressed() {
         if (!this.selectionMode)
             super.onBackPressed()
         else {
-            for (holder in holders)
+            for (holder in holderImages)
                 holder.disableSelectionMode()
             this.selectionMode = false
         }
@@ -85,6 +81,13 @@ class ImageGridActivity : AppCompatActivity(),
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+
+//        val grid: StaggeredGridLayoutManager = recycleViewerForImages.layoutManager as StaggeredGridLayoutManager
+//
+//        val firstVisibleItemPositions = IntArray(100)
+//        val aux: IntArray = grid.findFirstVisibleItemPositions(firstVisibleItemPositions)
+//
+//        Log.i("GRID", "offset: $aux, | into: $firstVisibleItemPositions")
 
 //        val v: View? = recycleViewerForImages.layoutManager?.getChildAt(1)
 //        var offset=0
@@ -95,60 +98,48 @@ class ImageGridActivity : AppCompatActivity(),
 
         when (newConfig.orientation) {
             ORIENTATION_PORTRAIT -> recycleViewerForImages.layoutManager =
-                StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
+                    StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
             ORIENTATION_LANDSCAPE -> recycleViewerForImages.layoutManager =
-                StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
+                    StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
             else -> { // Note the block
                 Log.w(
-                    "Orientation",
-                    "Orientation in ImageGridKotlinActivity was undefined at configuration change"
+                        "Orientation",
+                        "Orientation in ImageGridKotlinActivity was undefined at configuration change"
                 )
             }
         }
+    }
+
+    private fun startFullscreenActivity(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder){
+        Toast.makeText(
+                this,
+                "Clicked picture: ${imageColorViewHolder.myPhoto}",
+                Toast.LENGTH_LONG
+        ).show()
+        Log.i("Files", "Image to open: ${imageColorViewHolder.myPhoto}")
+        val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
+
+        Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_ARRAY, this.album.photos)
+        Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_POSITION, imageColorViewHolder.photoPositionInMyArray)
+
+        this.startActivity(intentFullScreenImage)
     }
 
     /**
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onItemClick(
-        view: View,
-        position: Int,
-        colorViewHolder: ImageGridAdapter.ColorViewHolder
+            view: View,
+            position: Int,
+            imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder
     ) {
-//        Toast.makeText(this, "Image SHORT clicked $position", Toast.LENGTH_SHORT).show()
-//        colorViewHolder?.updatePictureBySelection()
-        if (view is ImageButton) { //important sa verific ImageButton primul, pt ca ImageButton extinde ImageView si se poate confunda
-            Toast.makeText(
-                this,
-                "Clicked picture: ${colorViewHolder.myPhoto}",
-                Toast.LENGTH_LONG
-            ).show()
-            //am lasat pe cazuri separate pt ca pe viitor tr sa transmit la fullscreenView daca se permite editarea sau nu
-            //
-
-            Log.i("Files", "Image to open: ${colorViewHolder.myPhoto}")
-
-            val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
-            Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_MESSAGE, colorViewHolder.myPhoto)
-
-            this.startActivity(intentFullScreenImage)
-
-
+        if (view is ImageButton) { //important to check ImageButton first, as ImageButton extends ImageView
+            startFullscreenActivity(imageColorViewHolder)
         } else {
             if (selectionMode) {
-                colorViewHolder.reverseSelection()
+                imageColorViewHolder.reverseSelection()
             } else {
-                Toast.makeText(
-                    this,
-                    "Clicked picture: ${colorViewHolder.myPhoto}",
-                    Toast.LENGTH_LONG
-                ).show()
-                Log.i("Files", "Image to open: ${colorViewHolder.myPhoto}")
-
-                val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
-                Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_MESSAGE, colorViewHolder.myPhoto)
-
-                this.startActivity(intentFullScreenImage)
+                startFullscreenActivity(imageColorViewHolder)
             }
         }
     }
@@ -157,23 +148,39 @@ class ImageGridActivity : AppCompatActivity(),
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onLongItemClick(
-        view: View,
-        position: Int,
-        colorViewHolder: ImageGridAdapter.ColorViewHolder
+            view: View,
+            position: Int,
+            imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder
     ) {
 //        Toast.makeText(this, "Image LONG clicked $position", Toast.LENGTH_SHORT).show()
 //        colorViewHolder?.updatePictureBySelection()
         if (selectionMode) {
-            colorViewHolder.reverseSelection()
+            imageColorViewHolder.reverseSelection()
         } else {
-            holders.forEach {
+            holderImages.forEach {
                 run {
                     it.enableSelectionMode()
                 }
             }
-            colorViewHolder.setAsSelected()
+            imageColorViewHolder.setAsSelected()
             selectionMode = true
         }
     }
+
+    override fun onResume() {
+        Log.i("Activity", "onResume entered")
+        super.onResume()
+
+//        val refreshedAlbum = StaticMethods.getOneAlbum(this, album.albumFullPath)
+//        Log.i("Files", "onResume in ImageViewGrid: found ${refreshedAlbum.albumCount} pictures")
+//        this.album=refreshedAlbum
+//        loadPicturesFromAlbum()
+        Log.i("Activity", "onResume exit")
+    }
+
+//    override fun onActivityReenter(resultCode: Int, data: Intent?) {
+//        Log.i("Activity","onActivityReenter called")
+//        super.onActivityReenter(resultCode, data)
+//    }
 
 }

@@ -26,28 +26,30 @@ import kotlinx.android.synthetic.main.item_image_in_grid.view.*
 import java.util.*
 
 class ImageGridAdapter(private val context: ImageGridActivity, private val images: ArrayList<MyPhoto>) :
-        RecyclerView.Adapter<ImageGridAdapter.ColorViewHolder>() {
+        RecyclerView.Adapter<ImageGridAdapter.ImageColorViewHolder>() {
     var mClickListener: ImageItemClickListener? = null
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): ImageGridAdapter.ColorViewHolder {
+    ): ImageGridAdapter.ImageColorViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_image_in_grid, parent, false)
-        return this.ColorViewHolder(view)
+        return this.ImageColorViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ImageGridAdapter.ColorViewHolder, position: Int) {
+    override fun onBindViewHolder(holderImage: ImageGridAdapter.ImageColorViewHolder, position: Int) {
 //        Log.i("Files", "onbindViewHolder called")
 
         //THIS IS THE ONLY PLACE WHERE I HAVE BOTH THE ITEM VIEW AND THE POSITION OF THE ITEM IN THE ORIGINAL DATA
-        holder.myPhoto = images[position]
+        holderImage.myPhoto = images[position]
+        holderImage.photoPositionInMyArray = position
+
         val options: RequestOptions = RequestOptions()
             .centerCrop()
             .error(R.mipmap.ic_launcher_round)
 
         Glide.with(context)
-            .load(holder.myPhoto.uri)
+            .load(holderImage.myPhoto.uri)
             .apply(options)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
@@ -67,7 +69,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    if (holder.myPhoto.selected) {
+                    if (holderImage.myPhoto.selected) {
                         resource?.setTint(Color.GRAY)
                         resource?.setTintBlendMode(BlendMode.MODULATE)
                     }
@@ -77,13 +79,13 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
                 }
 
             })
-            .into(holder.imageView)
+            .into(holderImage.imageView)
 
         if (context.selectionMode) {
-            holder.checkBox.isChecked = holder.myPhoto.selected
+            holderImage.checkBox.isChecked = holderImage.myPhoto.selected
         } else {
-            holder.checkBox.visibility = View.GONE
-            holder.imageButtonFullscreen.visibility = View.GONE
+            holderImage.checkBox.visibility = View.GONE
+            holderImage.imageButtonFullscreen.visibility = View.GONE
         }
 
 //        Picasso.get()
@@ -100,12 +102,13 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
         return images.size
     }
 
-    inner class ColorViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener,
+    inner class ImageColorViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener,
         View.OnLongClickListener {
         val imageView: ImageView = view.imageViewPicture
         val checkBox: CheckBox = view.checkBoxImage
         val imageButtonFullscreen: ImageButton = view.imageButtonFullscreen
         lateinit var myPhoto: MyPhoto
+        var photoPositionInMyArray: Int = 0
 
         init {
             view.setOnClickListener(this)
@@ -117,7 +120,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
             imageButtonFullscreen.setOnClickListener(this)
             imageButtonFullscreen.setOnLongClickListener(this)
 
-            context.holders.add(this)
+            context.holderImages.add(this)
 //            imageView.post { this.updatePictureBySelection() }
 //            imageView.drawable.
 //            imageView.setOnLongClickListener(
@@ -128,7 +131,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
 
 
         override fun onClick(view: View?) {
-            //important sa verific ImageButton primul, pt ca ImageButton extinde ImageView si se poate confunda
+            //important to check ImageButton first, as ImageButton extends ImageView
             when (view) {
                 is ImageButton -> Log.i("Files", "short clicked ImageButton")
                 is ImageView -> Log.i("Files", "short clicked ImageView")
@@ -143,7 +146,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
         }
 
         override fun onLongClick(view: View?): Boolean {
-            //important sa verific ImageButton primul, pt ca ImageButton extinde ImageView si se poate confunda
+            //important to check ImageButton first, as ImageButton extends ImageView
             when (view) {
                 is ImageButton -> Log.i("Files", "long clicked ImageButton")
                 is ImageView -> Log.i("Files", "long clicked ImageView")

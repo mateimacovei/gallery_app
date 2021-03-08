@@ -17,9 +17,11 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.example.gallery_app.FULLSCREEN_IMAGE_MESSAGE
+import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
+import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
 import com.example.gallery_app.R
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhoto
@@ -33,8 +35,10 @@ private const val DEBUG_TAG = "Gestures"
 class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var fullscreenContent: ImageView
     private lateinit var fullscreenContentControls: LinearLayout
-    private lateinit var picture: MyPhoto
     private val hideHandler = Handler()
+
+    private lateinit var myPhotoArray: ArrayList<MyPhoto>
+    private var currentPosition: Int = 0
 
     @SuppressLint("InlinedApi")
     private val hidePart2Runnable = Runnable {
@@ -96,32 +100,17 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
         // Set up the user interaction to manually show or hide the system UI.
         fullscreenContent = findViewById(R.id.fullscreen_ImageView)
         fullscreenContent.setOnClickListener { toggle() }
-
         fullscreenContentControls = findViewById(R.id.fullscreen_content_controls)
 
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-//        findViewById<Button>(R.id.dummy_button).setOnTouchListener(delayHideTouchListener)
-        //TO DO
-        picture = Box.Get(intent, FULLSCREEN_IMAGE_MESSAGE)
-        this.title = picture.name
+
+
+        myPhotoArray = Box.Get(intent, FULLSCREEN_IMAGE_ARRAY)
+        currentPosition = Box.Get(intent, FULLSCREEN_IMAGE_POSITION)
         Box.Remove(intent)
 
-
-        val options: RequestOptions = RequestOptions()
-            .centerCrop()
-            .error(R.mipmap.ic_launcher_round)
-
-        Glide.with(this)
-            .load(picture.uri)
-            .apply(options)
-            .fitCenter()
-            .into(fullscreenContent)
-
+        updateCurrentDisplayedPicture()
 
         val gestureDetector: GestureDetector = GestureDetector(this, this)
-
         fullscreenContent.setOnTouchListener(OnTouchListener(fun(
             view: View,
             event: MotionEvent
@@ -129,16 +118,20 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
             return gestureDetector.onTouchEvent(event)
         }))
 
-
-//
-//        fullscreenContent.setOnTouchListener(object : View.OnTouchListener {
-//            override fun onTouch(v: View, event: MotionEvent): Boolean {
-//                return gestureDetector.onTouchEvent(event)
-//            }
-//        })
-//        val mDetector = GestureDetectorCompat(this, this)
-//        mDetector.setOnDoubleTapListener(this)
         toggle()    //I shuld modify the rest of onCreate to start with fullscreen mode
+    }
+
+    fun updateCurrentDisplayedPicture(){
+        this.title = myPhotoArray[currentPosition].name
+
+        val options: RequestOptions = RequestOptions()
+                .centerCrop()
+                .error(R.mipmap.ic_launcher_round)
+        Glide.with(this)
+                .load( myPhotoArray[currentPosition].uri)
+                .apply(options)
+                .fitCenter()
+                .into(fullscreenContent)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -147,7 +140,7 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        delayedHide(5)
+        delayedHide(0)
     }
 
     private fun toggle() {
@@ -211,7 +204,7 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
         private const val UI_ANIMATION_DELAY = 300
         //if I have this lower that 300, the image will not re-center when the upper bar is hidden
 
-        private const val VELOCITY_THRESHOLD: Long = 1000
+        private const val VELOCITY_THRESHOLD: Long = 150
         //TO DO: adjust this
     }
 
@@ -259,22 +252,33 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
 
         if (Math.abs(velocityX) > Math.abs(velocityY)) {
             if (velocityX >= 0) {
-                Log.i("Files", "swipe right")
-                Toast.makeText(this, "swiped right", Toast.LENGTH_LONG).show()
+                Log.i("Gestures", "swipe right")
+//                Toast.makeText(this, "swiped right", Toast.LENGTH_LONG).show()
+                if(currentPosition>0)
+                {
+                    currentPosition--
+                    updateCurrentDisplayedPicture()
+                }
 
             } else { //if velocityX is negative, then it's towards left
-                Toast.makeText(this, "swiped left", Toast.LENGTH_LONG).show()
-                Log.i("Files", "swipe left")
+//                Toast.makeText(this, "swiped left", Toast.LENGTH_LONG).show()
+                Log.i("Gestures", "swipe left")
+
+                if(currentPosition<myPhotoArray.size-1)
+                {
+                    currentPosition++
+                    updateCurrentDisplayedPicture()
+                }
             }
         } else {
             if (velocityY >= 0) {
-                Log.i("Files", "swipe down")
+                Log.i("Gestures", "swipe down")
                 onBackPressed()
             } else {
                 Toast.makeText(
                     this, "swiped up", Toast.LENGTH_LONG
                 ).show()
-                Log.i("Files", "swipe up")
+                Log.i("Gestures", "swipe up")
             }
         }
 
@@ -282,7 +286,7 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
     }
 
     fun leftChipClicked(view: View) {
-        val uri = picture.uri
+        val uri =  myPhotoArray[currentPosition].uri
 
         val editIntent = Intent(Intent.ACTION_EDIT)
         editIntent.setDataAndType(uri, "image/*")
@@ -291,7 +295,7 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
     }
 
     fun middleChipClicked(view: View) {
-        val uri = picture.uri
+        val uri =  myPhotoArray[currentPosition].uri
 
         val sharingIntent = Intent(Intent.ACTION_SEND)
         sharingIntent.type = "image/*"
@@ -303,7 +307,7 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
     fun rightChipClicked(view: View) {
         Toast.makeText(this, "TO IMPLEMENT: DELETE", Toast.LENGTH_LONG).show()
 
-        val uri = picture.uri
+//        val uri =  myPhotoArray[currentPosition].uri
 //        contentResolver.delete(uri, null, null)
     }
 
