@@ -1,6 +1,7 @@
 package com.example.gallery_app.activities
 
 import android.content.Intent
+import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
@@ -12,6 +13,8 @@ import com.example.gallery_app.R
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhoto
 import kotlinx.android.synthetic.main.activity_image_detail.*
+import java.time.ZoneId
+import java.util.*
 
 
 class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
@@ -25,7 +28,8 @@ class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListen
         photo = Box.Get(intent, IMAGE_DETAILS)
         Box.Remove(intent)
 
-        textViewDate.text = photo.DATE_MODIFIED
+        textViewDate.text = SimpleDateFormat("dd MMMM yyyy").format(
+                photo.DATE_MODIFIED?.toLong()?.times(1000)?.let { Date(it) })
 
         textViewTitle.text = photo.name
 
