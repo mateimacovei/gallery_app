@@ -29,6 +29,9 @@ import com.example.gallery_app.storageAccess.MyPhoto
 
 
 private const val DEBUG_TAG = "Gestures"
+const val VELOCITY_THRESHOLD: Long = 150
+//TO DO: adjust this
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
@@ -204,9 +207,6 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
 //        private const val UI_ANIMATION_DELAY = 300
         private const val UI_ANIMATION_DELAY = 300
         //if I have this lower that 300, the image will not re-center when the upper bar is hidden
-
-        private const val VELOCITY_THRESHOLD: Long = 150
-        //TO DO: adjust this
     }
 
     override fun onDown(e: MotionEvent?): Boolean {
@@ -262,7 +262,6 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
                 }
 
             } else { //if velocityX is negative, then it's towards left
-//                Toast.makeText(this, "swiped left", Toast.LENGTH_LONG).show()
                 Log.i("Gestures", "swipe left")
 
                 if(currentPosition<myPhotoArray.size-1)
@@ -276,9 +275,6 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
                 Log.i("Gestures", "swipe down")
                 onBackPressed()
             } else {
-                Toast.makeText(
-                    this, "swiped up", Toast.LENGTH_LONG
-                ).show()
                 Log.i("Gestures", "swipe up")
 
                 val intentDetailsPage = Intent(this,ImageDetailActivity::class.java)

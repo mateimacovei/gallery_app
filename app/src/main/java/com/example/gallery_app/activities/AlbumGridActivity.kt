@@ -40,6 +40,9 @@ class AlbumGridActivity : AppCompatActivity(),
             aga.setClickListener(this)
             recycleViewerForAlbums.adapter = aga
         }
+        else{
+            Log.w("Files","NO ALBUMS RECEIVED")
+        }
 
         this.onConfigurationChanged(this.resources.configuration)
         this.title = "Albums"

@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         requestPermissions()
+        // TO DO : request StorageMedia refresh
 
         val intentAlbumGrid = Intent(this,AlbumGridActivity::class.java)
         this.startActivity(intentAlbumGrid)
