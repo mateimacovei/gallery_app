@@ -24,20 +24,19 @@ import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
 import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
 import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
+import com.example.gallery_app.adapter.customViews.ZoomImageView
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhoto
 
 
 private const val DEBUG_TAG = "Gestures"
-const val VELOCITY_THRESHOLD: Long = 150
-//TO DO: adjust this
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
-    private lateinit var fullscreenContent: ImageView
+class FullscreenImageActivity : AppCompatActivity(){
+    private lateinit var fullscreenContent: ZoomImageView
     private lateinit var fullscreenContentControls: LinearLayout
     private val hideHandler = Handler()
 
@@ -103,7 +102,8 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
 
         // Set up the user interaction to manually show or hide the system UI.
         fullscreenContent = findViewById(R.id.fullscreen_ImageView)
-//        fullscreenContent.setOnClickListener { toggle() }
+        fullscreenContent.setOnClickListener { toggle() }
+        fullscreenContent.fullscreenImageActivity = this
         fullscreenContentControls = findViewById(R.id.fullscreen_content_controls)
 
 
@@ -209,82 +209,30 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
         //if I have this lower that 300, the image will not re-center when the upper bar is hidden
     }
 
-    override fun onDown(e: MotionEvent?): Boolean {
-        Log.i("Gestures", "onDown called")
-        return false
-    }
-
-    override fun onShowPress(e: MotionEvent?) {
-        Log.i("Gestures", "onShowPress called")
-    }
-
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
-        Log.i("Gestures", "onSingleTapUp called")
-        return false
-    }
-
-    override fun onScroll(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
-        distanceX: Float,
-        distanceY: Float
-    ): Boolean {
-        Log.i("Gestures", "onScroll called")
-        return false
-    }
-
-    override fun onLongPress(e: MotionEvent?) {
-        Log.i("Gestures", "onLongPress called")
-
-    }
-
-    override fun onFling(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
-        velocityX: Float,
-        velocityY: Float
-    ): Boolean {
-        Log.i("Gestures", "onFling called")
-        if (Math.abs(velocityX) < VELOCITY_THRESHOLD
-            && Math.abs(velocityY) < VELOCITY_THRESHOLD
-        ) {
-            return false //if the fling is not fast enough then it's just like drag
+    fun swipeLeft()
+    {
+        if(currentPosition<myPhotoArray.size-1)
+        {
+            currentPosition++
+            updateCurrentDisplayedPicture()
         }
-
-        if (Math.abs(velocityX) > Math.abs(velocityY)) {
-            if (velocityX >= 0) {
-                Log.i("Gestures", "swipe right")
-//                Toast.makeText(this, "swiped right", Toast.LENGTH_LONG).show()
-                if(currentPosition>0)
-                {
-                    currentPosition--
-                    updateCurrentDisplayedPicture()
-                }
-
-            } else { //if velocityX is negative, then it's towards left
-                Log.i("Gestures", "swipe left")
-
-                if(currentPosition<myPhotoArray.size-1)
-                {
-                    currentPosition++
-                    updateCurrentDisplayedPicture()
-                }
-            }
-        } else {
-            if (velocityY >= 0) {
-                Log.i("Gestures", "swipe down")
-                onBackPressed()
-            } else {
-                Log.i("Gestures", "swipe up")
-
-                val intentDetailsPage = Intent(this,ImageDetailActivity::class.java)
-                Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myPhotoArray[currentPosition])
-                this.startActivity(intentDetailsPage)
-            }
-        }
-
-        return true
     }
+
+    fun swipeRight(){
+        if(currentPosition>0)
+        {
+            currentPosition--
+            updateCurrentDisplayedPicture()
+        }
+    }
+
+    fun swipeUp(){
+        val intentDetailsPage = Intent(this,ImageDetailActivity::class.java)
+        Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myPhotoArray[currentPosition])
+        this.startActivity(intentDetailsPage)
+    }
+
+    fun swipeDown(){onBackPressed()}
 
     fun leftChipClicked(view: View) {
         val uri =  myPhotoArray[currentPosition].uri
@@ -310,6 +258,7 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
 
 //        val uri =  myPhotoArray[currentPosition].uri
 //        contentResolver.delete(uri, null, null)
+        // TO DO : IMPLEMENT DELETE
     }
 
 }

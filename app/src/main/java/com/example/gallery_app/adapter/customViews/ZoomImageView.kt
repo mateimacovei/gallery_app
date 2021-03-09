@@ -10,8 +10,12 @@ import androidx.appcompat.widget.AppCompatImageView
 import android.graphics.Matrix
 import android.view.GestureDetector
 import android.view.View
+import com.example.gallery_app.activities.FullscreenImageActivity
 
-class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
+const val VELOCITY_THRESHOLD: Long = 150
+//TO DO: adjust this
+
+open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
     var matri: Matrix? = null
     var mode = NONE
 
@@ -31,6 +35,11 @@ class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
     var mScaleDetector: ScaleGestureDetector? = null
     var contex: Context? = null
 
+    //needed for gestureListener
+    var isFullscreen: Boolean = true
+    lateinit var fullscreenImageActivity: FullscreenImageActivity
+    //
+
     constructor(context: Context) : super(context) {
         sharedConstructing(context)
     }
@@ -41,18 +50,10 @@ class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
 
     private fun sharedConstructing(context: Context) {
         super.setClickable(true)
-        this.contex= context
+        this.contex = context
         mScaleDetector = ScaleGestureDetector(context, ScaleListener())
 
-//        mGestureDetector =
         val gestureDetector: GestureDetector = GestureDetector(context, this)
-        this.setOnTouchListener(View.OnTouchListener(fun(
-                view: View,
-                event: MotionEvent
-        ): Boolean {
-            Log.i("Gestures", "OnTouchListener called")
-            return gestureDetector.onTouchEvent(event)
-        }))
 
         matri = Matrix()
         m = FloatArray(9)
@@ -85,7 +86,9 @@ class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
                 MotionEvent.ACTION_POINTER_UP -> mode = NONE
             }
             imageMatrix = matri
+            gestureDetector.onTouchEvent(event)
             invalidate()
+
             true // indicate event was handled
         }
     }
@@ -93,10 +96,6 @@ class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
     fun setMaxZoom(x: Float) {
         maxScale = x
     }
-
-//    override fun performClick(event: MotionEvent?): Boolean {
-//        return super.onTouchEvent(event)
-//    }
 
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
@@ -108,10 +107,12 @@ class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
             var mScaleFactor = detector.scaleFactor
             val origScale = saveScale
             saveScale *= mScaleFactor
+            isFullscreen = false
             if (saveScale > maxScale) {
                 saveScale = maxScale
                 mScaleFactor = maxScale / origScale
             } else if (saveScale < minScale) {
+                isFullscreen = true
                 saveScale = minScale
                 mScaleFactor = minScale / origScale
             }
@@ -121,34 +122,64 @@ class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
         }
     }
 
-//    private inner class GestureListener: GestureDetector.OnGestureListener{
-        override fun onDown(e: MotionEvent?): Boolean {
-            Log.i("Gestures", "onDown called")
-            return false
-        }
+    override fun onDown(e: MotionEvent?): Boolean {
+        Log.i("Gestures", "onDown called")
+        return false
+    }
 
-        override fun onShowPress(e: MotionEvent?) {
-            Log.i("Gestures", "onShowPress called")
-        }
+    override fun onShowPress(e: MotionEvent?) {
+        Log.i("Gestures", "onShowPress called")
+    }
 
-        override fun onSingleTapUp(e: MotionEvent?): Boolean {
-            Log.i("Gestures", "onSingleTapUp called")
-            return false
-        }
+    override fun onSingleTapUp(e: MotionEvent?): Boolean {
+        Log.i("Gestures", "onSingleTapUp called")
+        return false
+    }
 
-        override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-            Log.i("Gestures", "onScroll called")
-            return false
-        }
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+        Log.i("Gestures", "onScroll called")
+        return false
+    }
 
-        override fun onLongPress(e: MotionEvent?) {
-            Log.i("Gestures", "onLongPress called")
-        }
+    override fun onLongPress(e: MotionEvent?) {
+        Log.i("Gestures", "onLongPress called")
+    }
 
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-            Log.i("Gestures", "onFling called")
+    override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+        Log.i("Gestures", "onFling called, isFullscreen= $isFullscreen")
+        //I will pass this a refrence to the parent activity
+        if (isFullscreen) {
+            // callback onFling
+            if (Math.abs(velocityX) < VELOCITY_THRESHOLD
+                    && Math.abs(velocityY) < VELOCITY_THRESHOLD)
+                return false //if the fling is not fast enough then it's just like drag
+
+            if (Math.abs(velocityX) > Math.abs(velocityY)) {
+                if (velocityX >= 0) {
+                    Log.i("Gestures", "swipe right")
+                    fullscreenImageActivity.swipeRight()
+
+                } else {
+                    Log.i("Gestures", "swipe left")
+                    fullscreenImageActivity.swipeLeft()
+
+                }
+            } else {
+                if (velocityY >= 0) {
+                    Log.i("Gestures", "swipe down")
+                    fullscreenImageActivity.swipeDown()
+                } else {
+                    Log.i("Gestures", "swipe up")
+                    fullscreenImageActivity.swipeUp()
+
+                }
+            }
+
             return true
+
         }
+        return true
+    }
 
 //    }
 
@@ -220,7 +251,7 @@ class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
     }
 
     companion object {
-        // We can be in one of these 3 states
+        // We can be in one of these states
         const val NONE = 0
         const val DRAG = 1
         const val ZOOM = 2
