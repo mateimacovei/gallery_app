@@ -103,7 +103,7 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
 
         // Set up the user interaction to manually show or hide the system UI.
         fullscreenContent = findViewById(R.id.fullscreen_ImageView)
-        fullscreenContent.setOnClickListener { toggle() }
+//        fullscreenContent.setOnClickListener { toggle() }
         fullscreenContentControls = findViewById(R.id.fullscreen_content_controls)
 
 
@@ -114,13 +114,13 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
 
         updateCurrentDisplayedPicture()
 
-        val gestureDetector: GestureDetector = GestureDetector(this, this)
-        fullscreenContent.setOnTouchListener(OnTouchListener(fun(
-            view: View,
-            event: MotionEvent
-        ): Boolean {
-            return gestureDetector.onTouchEvent(event)
-        }))
+//        val gestureDetector: GestureDetector = GestureDetector(this, this)
+//        fullscreenContent.setOnTouchListener(OnTouchListener(fun(
+//            view: View,
+//            event: MotionEvent
+//        ): Boolean {
+//            return gestureDetector.onTouchEvent(event)
+//        }))
 
         toggle()    //I shuld modify the rest of onCreate to start with fullscreen mode
     }
