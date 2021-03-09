@@ -111,11 +111,11 @@ class ImageGridActivity : AppCompatActivity(),
     }
 
     private fun startFullscreenActivity(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder){
-        Toast.makeText(
-                this,
-                "Clicked picture: ${imageColorViewHolder.myPhoto}",
-                Toast.LENGTH_LONG
-        ).show()
+//        Toast.makeText(
+//                this,
+//                "Clicked picture: ${imageColorViewHolder.myPhoto}",
+//                Toast.LENGTH_LONG
+//        ).show()
         Log.i("Files", "Image to open: ${imageColorViewHolder.myPhoto}")
         val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
 

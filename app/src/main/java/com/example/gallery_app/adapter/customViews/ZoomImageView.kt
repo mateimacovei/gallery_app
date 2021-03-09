@@ -8,8 +8,10 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import androidx.appcompat.widget.AppCompatImageView
 import android.graphics.Matrix
+import android.view.GestureDetector
+import android.view.View
 
-class ZoomImageView : AppCompatImageView {
+class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
     var matri: Matrix? = null
     var mode = NONE
 
@@ -41,6 +43,17 @@ class ZoomImageView : AppCompatImageView {
         super.setClickable(true)
         this.contex= context
         mScaleDetector = ScaleGestureDetector(context, ScaleListener())
+
+//        mGestureDetector =
+        val gestureDetector: GestureDetector = GestureDetector(context, this)
+        this.setOnTouchListener(View.OnTouchListener(fun(
+                view: View,
+                event: MotionEvent
+        ): Boolean {
+            Log.i("Gestures", "OnTouchListener called")
+            return gestureDetector.onTouchEvent(event)
+        }))
+
         matri = Matrix()
         m = FloatArray(9)
         imageMatrix = matri
@@ -81,6 +94,10 @@ class ZoomImageView : AppCompatImageView {
         maxScale = x
     }
 
+//    override fun performClick(event: MotionEvent?): Boolean {
+//        return super.onTouchEvent(event)
+//    }
+
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
             mode = ZOOM
@@ -103,6 +120,37 @@ class ZoomImageView : AppCompatImageView {
             return true
         }
     }
+
+//    private inner class GestureListener: GestureDetector.OnGestureListener{
+        override fun onDown(e: MotionEvent?): Boolean {
+            Log.i("Gestures", "onDown called")
+            return false
+        }
+
+        override fun onShowPress(e: MotionEvent?) {
+            Log.i("Gestures", "onShowPress called")
+        }
+
+        override fun onSingleTapUp(e: MotionEvent?): Boolean {
+            Log.i("Gestures", "onSingleTapUp called")
+            return false
+        }
+
+        override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+            Log.i("Gestures", "onScroll called")
+            return false
+        }
+
+        override fun onLongPress(e: MotionEvent?) {
+            Log.i("Gestures", "onLongPress called")
+        }
+
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+            Log.i("Gestures", "onFling called")
+            return true
+        }
+
+//    }
 
     fun fixTrans() {
         matri!!.getValues(m)
@@ -138,7 +186,7 @@ class ZoomImageView : AppCompatImageView {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        viewWidth = MeasureSpec.getSize(widthMeasureSpec)
+        viewWidth = View.MeasureSpec.getSize(widthMeasureSpec)
         viewHeight = MeasureSpec.getSize(heightMeasureSpec)
         //
         // Rescales image on rotation
