@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
 import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
+import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhoto
@@ -279,6 +280,10 @@ class FullscreenImageActivity : AppCompatActivity(), GestureDetector.OnGestureLi
                     this, "swiped up", Toast.LENGTH_LONG
                 ).show()
                 Log.i("Gestures", "swipe up")
+
+                val intentDetailsPage = Intent(this,ImageDetailActivity::class.java)
+                Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myPhotoArray[currentPosition])
+                this.startActivity(intentDetailsPage)
             }
         }
 

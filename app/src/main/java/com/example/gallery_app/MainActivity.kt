@@ -21,6 +21,7 @@ import com.example.gallery_app.storageAccess.StaticMethods
 const val IMAGE_GRID_MESSAGE = "com.example.gallery_app.IMAGEGRID"
 const val FULLSCREEN_IMAGE_ARRAY = "com.example.gallery_app.FULLSCREENIMAGEARRAY"
 const val FULLSCREEN_IMAGE_POSITION = "com.example.gallery_app.FULLSCREENIMAGEPOSITION"
+const val IMAGE_DETAILS = "com.example.gallery_app.IMAGEDETAILS"
 
 class MainActivity : AppCompatActivity() {
     private val PERMS_RETURN: Int = 12345
@@ -75,30 +76,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    }
-
-    fun gridViewButtonClicked(view: View) {
-        val pictures: ArrayList<MyPhoto> = StaticMethods.getAllPictures(this)
-
-        val intentImageGrid = Intent(this, ImageGridActivity::class.java)
-        //these don't work because URI (member in MyPicture class) is abstract, can't be serialized
-//            .apply {
-//                putExtra(IMAGE_GRID_MESSAGE, pictures)
-//            }
-
-        Box.Add(intentImageGrid, IMAGE_GRID_MESSAGE,pictures)
-
-
-//        Log.i("Files","before putting pictures in intent to ImageGridActivity")
-//        intentImageGrid.putExtra(IMAGE_GRID_MESSAGE,pictures[0])
-//
-//        Log.i("Files","after putting pictures in intent to ImageGridActivity")
-
-        this.startActivity(intentImageGrid)
-    }
-
-    fun textMainClicked(view: View) {
-        Log.i("Files", "text view in main clicked")
     }
 
     fun albumGridButtonClicked(view: View) {
