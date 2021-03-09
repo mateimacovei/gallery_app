@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
@@ -41,30 +42,52 @@ class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListen
 
         if (photo.HEIGHT != null)
             (photo.WIDTH + "x" + photo.HEIGHT).also { textViewResolution.text = it }
+
+        detailsConstraintLayout.setOnClickListener{nothing()}
+        //FUN FACT: if I don't set a separate onClickListener, it will never reach fling
+        val gestureDetector: GestureDetector = GestureDetector(this, this)
+        detailsConstraintLayout.setOnTouchListener(View.OnTouchListener(fun(
+                view: View,
+                event: MotionEvent
+        ): Boolean {
+            Log.i("Gestures", "OnTouchListener called")
+            return gestureDetector.onTouchEvent(event)
+        }))
+    }
+
+    private fun nothing(){
+
     }
 
     override fun onDown(e: MotionEvent?): Boolean {
+        Log.i("Gestures", "onDown called")
         return false
     }
 
     override fun onShowPress(e: MotionEvent?) {
+        Log.i("Gestures", "onShowPress called")
     }
 
     override fun onSingleTapUp(e: MotionEvent?): Boolean {
+        Log.i("Gestures", "onSingleTapUp called")
         return false
     }
 
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+        Log.i("Gestures", "onScroll called")
         return false
     }
 
     override fun onLongPress(e: MotionEvent?) {
+        Log.i("Gestures", "onLongPress called")
     }
 
+    // TO DO : not working
     override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-        if (Math.abs(velocityX) < VELOCITY_THRESHOLD
-                && Math.abs(velocityY) < VELOCITY_THRESHOLD)
-            return false //if the fling is not fast enough then it's just like drag
+//        if (Math.abs(velocityX) < VELOCITY_THRESHOLD
+//                && Math.abs(velocityY) < VELOCITY_THRESHOLD)
+//            return false //if the fling is not fast enough then it's just like drag
+        Log.i("Gestures", "onFling")
 
         if (Math.abs(velocityX) > Math.abs(velocityY)) {
             if (velocityX >= 0) {
