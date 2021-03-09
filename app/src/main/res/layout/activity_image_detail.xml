@@ -14,25 +14,13 @@
         android:layout_marginStart="16dp"
         android:paddingLeft="@dimen/fab_margin"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView5">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip8"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip7"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </com.google.android.material.chip.ChipGroup>
+        app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
     <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="42dp"
+        android:layout_marginTop="24dp"
         android:padding="@dimen/fab_margin"
         android:text="Tags:"
         app:layout_constraintStart_toStartOf="parent"
@@ -52,17 +40,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=" "
-        app:layout_constraintEnd_toEndOf="@+id/textViewTitle"
-        app:layout_constraintStart_toEndOf="@+id/textViewTitle"
-        app:layout_constraintTop_toBottomOf="@+id/textViewPath" />
+        app:layout_constraintStart_toEndOf="@+id/textViewSize"
+        app:layout_constraintTop_toTopOf="@+id/textViewSize" />
 
     <TextView
         android:id="@+id/textViewSize"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/fab_margin"
+        android:paddingRight="@dimen/fab_margin"
         android:text="size_here"
-        app:layout_constraintBaseline_toBaselineOf="@+id/textViewResolution"
-        app:layout_constraintEnd_toStartOf="@+id/textViewResolution" />
+        app:layout_constraintStart_toStartOf="@+id/textViewPath"
+        app:layout_constraintTop_toBottomOf="@+id/textViewPath" />
 
     <TextView
         android:id="@+id/textViewPath"
