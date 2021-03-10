@@ -82,7 +82,7 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
         }
 
         holder.albumNameTextView.text = holder.album.albumName
-        holder.albumCountTextView.text = holder.album.albumCount.toString()
+        holder.albumCountTextView.text = holder.album.photos.size.toString()
 
 //        holder.imageView.setOnClickListener {
 //            //handle click event on image
