@@ -1,19 +1,20 @@
 package com.example.gallery_app.activities
 
-import android.content.Intent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhoto
 import kotlinx.android.synthetic.main.activity_image_detail.*
-import java.time.ZoneId
 import java.util.*
 
 
@@ -109,6 +110,13 @@ class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListen
         }
 
         return true
+    }
+
+    fun copyToClipboardPressed(view: View) {
+        Toast.makeText(this, "Name copied to clipboard", Toast.LENGTH_SHORT).show()
+        val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clip: ClipData = ClipData.newPlainText(photo.name,photo.name)
+        clipboard.setPrimaryClip(clip)
     }
 
 
