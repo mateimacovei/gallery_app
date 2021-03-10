@@ -29,10 +29,10 @@
     <TextView
         android:id="@+id/textViewTitle"
         android:layout_width="wrap_content"
-        android:layout_height="42dp"
-        android:paddingLeft="@dimen/fab_margin"
-        android:text="title_here"
+        android:layout_height="32dp"
         android:gravity="center"
+        android:paddingStart="@dimen/fab_margin"
+        android:text="title_here"
         app:layout_constraintStart_toStartOf="@+id/textViewDate"
         app:layout_constraintTop_toBottomOf="@+id/textViewDate" />
 
@@ -59,7 +59,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="1dp"
-        android:paddingLeft="@dimen/fab_margin"
+        android:paddingStart="@dimen/fab_margin"
         android:text="path_here"
         app:layout_constraintStart_toStartOf="@+id/textViewTitle"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
@@ -73,14 +73,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageButton
-        android:id="@+id/copyToClipboard"
-        android:layout_width="39dp"
-        android:layout_height="42dp"
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chip7"
+        android:layout_width="31dp"
+        android:layout_height="32dp"
         android:onClick="copyToClipboardPressed"
+        app:chipIcon="@android:drawable/ic_menu_save"
         app:layout_constraintBottom_toBottomOf="@+id/textViewTitle"
         app:layout_constraintStart_toEndOf="@+id/textViewTitle"
-        app:layout_constraintTop_toTopOf="@+id/textViewTitle"
-        app:srcCompat="@android:drawable/ic_menu_save" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewDate" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
