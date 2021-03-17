@@ -7,7 +7,6 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.AbsListView
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
@@ -25,7 +24,10 @@ const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
 
 class ImageGridActivity : AppCompatActivity(),
     ImageItemClickListener{
+    //I need both, because I can have selection mode on with 0 selected
     var selectionMode: Boolean = false
+    var selected = 0
+
     val holderImages: ArrayList<ImageGridAdapter.ImageColorViewHolder> = ArrayList()
     lateinit var album: MyPhotoAlbum
 
@@ -33,6 +35,8 @@ class ImageGridActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_grid)
         setSupportActionBar(image_grid_toolbar)
+//        var checkbox = layoutInflater.inflate(R.layout.activity_image_grid,image_grid_toolbar)
+//        image_grid_toolbar.addView(checkbox)
 
         val sglm = StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
         recycleViewerForImages.layoutManager = sglm
@@ -42,7 +46,10 @@ class ImageGridActivity : AppCompatActivity(),
         album = Box.Get(intent, IMAGE_GRID_MESSAGE)
         Box.Remove(intent)
 
-//        image_grid_toolbar.title = album.albumName
+        Log.i("Files","album being viewed: ${album.albumName}")
+        this.title = album.albumName
+        image_grid_toolbar.subtitle = album.photos.size.toString()
+        image_grid_toolbar.navigationIcon
 
         loadPicturesFromAlbum()
 
@@ -51,44 +58,77 @@ class ImageGridActivity : AppCompatActivity(),
         Log.i("Activity", "onCreate exit")
     }
 
+    private fun enableSelectionMode(){
+        selectionMode=true
+        image_grid_toolbar.visibility = View.VISIBLE
+        toolbarCheckBox.visibility = View.VISIBLE
+        if(selected == album.photos.size)
+            toolbarCheckBox.isChecked = true
+
+        this.title=""
+        image_grid_toolbar.subtitle=""
+        for (holder in holderImages)
+            holder.enableSelectionMode()
+    }
+
+    private fun disableSelectionMode(){
+        this.title = album.albumName
+        image_grid_toolbar.subtitle = album.photos.size.toString()
+        selectionMode=false
+        selected=0
+        toolbarCheckBox.isChecked = false
+        toolbarCheckBox.visibility = View.GONE
+        holderImages.forEach { holder ->
+            holder.disableSelectionMode()
+        }
+        album.photos.forEach{myPhoto -> myPhoto.selected=false }
+        //both are needed, as there could be pictures selected that are in a holder that has been removed due to scrolling
+    }
+
+    private fun loadPicturesFromAlbum(){
+        selected=0
+        for (picture in album.photos)
+            if(picture.selected)
+                selected++
+        if(selected>0)
+            enableSelectionMode()
+        else{
+            toolbarCheckBox.visibility = View.GONE
+        }
+
+        val iga = ImageGridAdapter(this, album.photos)
+        iga.setClickListener(this)
+        recycleViewerForImages.adapter = iga
+    }
+
     inner class MyOnFlingListener : RecyclerView.OnFlingListener() {
         override fun onFling(velocityX: Int, velocityY: Int): Boolean {
-            if (velocityY > VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD) {
-                Log.i("Scroll", "scroll down")
-                if(!selectionMode)
+            if (!selectionMode) {
+                if (velocityY > VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD) {
+                    Log.i("Scroll", "scroll down")
                     image_grid_toolbar.visibility = View.GONE
-            }
-            if (velocityY < VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD) {
-                Log.i("Scroll", "scroll up")
-                image_grid_toolbar.visibility = View.VISIBLE
+                }
+                if (velocityY < VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD) {
+                    Log.i("Scroll", "scroll up")
+                    image_grid_toolbar.visibility = View.VISIBLE
+                }
             }
             return false //it was not handled. If I set it to true, it will not pass the event on to the inertia method
         }
 
     }
 
-    private fun loadPicturesFromAlbum(){
-        val pictures: ArrayList<MyPhoto> = album.photos
-        var i = 0
-        while (i < pictures.size && !selectionMode) {
-            selectionMode = pictures[i].selected
-            i++
-        }
-        val iga = ImageGridAdapter(this, pictures)
-        iga.setClickListener(this)
-        recycleViewerForImages.adapter = iga
-    }
-
     override fun onBackPressed() {
         if (!this.selectionMode)
             super.onBackPressed()
         else {
-            for (holder in holderImages)
-                holder.disableSelectionMode()
-            this.selectionMode = false
+            disableSelectionMode()
         }
     }
 
+    /**
+     * sets grid_size by orientation ??TO DO have a member defining the desired column number
+     */
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
@@ -121,11 +161,6 @@ class ImageGridActivity : AppCompatActivity(),
     }
 
     private fun startFullscreenActivity(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder){
-//        Toast.makeText(
-//                this,
-//                "Clicked picture: ${imageColorViewHolder.myPhoto}",
-//                Toast.LENGTH_LONG
-//        ).show()
         Log.i("Files", "Image to open: ${imageColorViewHolder.myPhoto}")
         val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
 
@@ -133,6 +168,21 @@ class ImageGridActivity : AppCompatActivity(),
         Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_POSITION, imageColorViewHolder.photoPositionInMyArray)
 
         this.startActivity(intentFullScreenImage)
+    }
+
+    /**
+     * +- selected
+     * update toolbarCheckBox
+     * calls imageColorViewHolder.reverseSelection()
+     */
+    private fun reverseSelection(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder)
+    {
+        if(imageColorViewHolder.myPhoto.selected)
+            selected--
+        else selected++
+        toolbarCheckBox.text=selected.toString()
+
+        imageColorViewHolder.reverseSelection()
     }
 
     /**
@@ -147,7 +197,7 @@ class ImageGridActivity : AppCompatActivity(),
             startFullscreenActivity(imageColorViewHolder)
         } else {
             if (selectionMode) {
-                imageColorViewHolder.reverseSelection()
+                reverseSelection(imageColorViewHolder)
             } else {
                 startFullscreenActivity(imageColorViewHolder)
             }
@@ -163,18 +213,11 @@ class ImageGridActivity : AppCompatActivity(),
             imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder
     ) {
 //        Toast.makeText(this, "Image LONG clicked $position", Toast.LENGTH_SHORT).show()
-//        colorViewHolder?.updatePictureBySelection()
-        if (selectionMode) {
-            imageColorViewHolder.reverseSelection()
-        } else {
-            holderImages.forEach {
-                run {
-                    it.enableSelectionMode()
-                }
-            }
-            imageColorViewHolder.setAsSelected()
-            selectionMode = true
+        if (!selectionMode) {
+            selected = 1
+            enableSelectionMode()
         }
+        reverseSelection(imageColorViewHolder)
     }
 
     override fun onResume() {
@@ -186,6 +229,20 @@ class ImageGridActivity : AppCompatActivity(),
 //        this.album=refreshedAlbum
 //        loadPicturesFromAlbum()
         Log.i("Activity", "onResume exit")
+    }
+
+    fun toolbarCheckBoxClicked(view: View) {
+        if(selectionMode){
+            if(toolbarCheckBox.isChecked)
+            {
+                for(holder in holderImages)
+                    holder.setAsSelected()
+            }
+            else
+                for(holder in holderImages)
+                    holder.setAsUnselected()
+        }
+        else Log.w("Error","checkbox was clicked outside of selectionMode")
     }
 
 //    override fun onActivityReenter(resultCode: Int, data: Intent?) {

@@ -32,9 +32,10 @@
     </androidx.recyclerview.widget.RecyclerView>
 
     <CheckBox
-        android:id="@+id/checkBox"
+        android:id="@+id/toolbarCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="toolbarCheckBoxClicked"
         android:text="CheckBox"
         app:layout_constraintBottom_toBottomOf="@+id/image_grid_toolbar"
         app:layout_constraintStart_toStartOf="@+id/image_grid_toolbar"
