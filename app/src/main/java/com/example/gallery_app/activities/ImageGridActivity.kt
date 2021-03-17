@@ -6,47 +6,60 @@ import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.gallery_app.*
 import com.example.gallery_app.adapter.ImageGridAdapter
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
+import com.example.gallery_app.adapter.customViews.VELOCITY_THRESHOLD
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhoto
 import com.example.gallery_app.storageAccess.MyPhotoAlbum
 import kotlinx.android.synthetic.main.activity_image_grid.*
 
+const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
 
 class ImageGridActivity : AppCompatActivity(),
-    ImageItemClickListener {
+    ImageItemClickListener{
     var selectionMode: Boolean = false
     val holderImages: ArrayList<ImageGridAdapter.ImageColorViewHolder> = ArrayList()
     lateinit var album: MyPhotoAlbum
 
+
+//    val scrollListener = MyScrollListener()
+//    inner class MyScrollListener : RecyclerView.OnScrollListener()
+//    {
+//        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+//            super.onScrolled(recyclerView, dx, dy)
+//            if(dy>0)
+//                image_grid_toolbar.visibility = View.GONE
+//            if (dy<0)
+//                image_grid_toolbar.visibility = View.VISIBLE
+//
+//
+//        }
+//    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_grid)
+        setSupportActionBar(image_grid_toolbar)
 
         val sglm = StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
         recycleViewerForImages.layoutManager = sglm
-
-
-//        val pictures: ArrayList<MyPhoto> = intent.extras?.get(
-//            IMAGE_GRID_MESSAGE
-//        ) as ArrayList<MyPhoto>
-
-//        val picture: MyPhoto = intent.getSerializableExtra(
-//            IMAGE_GRID_MESSAGE
-//        ) as MyPhoto
-//        val pictures = ArrayList<MyPhoto>()
-//        pictures.add(picture)
+//        recycleViewerForImages.addOnScrollListener(this.scrollListener)
 
         album = Box.Get(intent, IMAGE_GRID_MESSAGE)
         Box.Remove(intent)
 
-        this.title=album.albumName
+//        image_grid_toolbar.title = album.albumName
+
         loadPicturesFromAlbum()
 
         this.onConfigurationChanged(this.resources.configuration)

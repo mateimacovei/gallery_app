@@ -30,7 +30,8 @@
         <!-- android:theme="@style/Theme.gallery_app.NoActionBar" /> -->
         <activity
             android:name=".activities.ImageGridActivity"
-            android:configChanges="orientation|screenSize" />
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.gallery_app.NoActionBar"/>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

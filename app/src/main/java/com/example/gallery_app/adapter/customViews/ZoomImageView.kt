@@ -53,7 +53,7 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
         this.contex = context
         mScaleDetector = ScaleGestureDetector(context, ScaleListener())
 
-        val gestureDetector: GestureDetector = GestureDetector(context, this)
+        val gestureDetector = GestureDetector(context, this)
 
         matri = Matrix()
         m = FloatArray(9)
@@ -147,9 +147,7 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
 
     override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
         Log.i("Gestures", "onFling called, isFullscreen= $isFullscreen")
-        //I will pass this a refrence to the parent activity
         if (isFullscreen) {
-            // callback onFling
             if (Math.abs(velocityX) < VELOCITY_THRESHOLD
                     && Math.abs(velocityY) < VELOCITY_THRESHOLD)
                 return false //if the fling is not fast enough then it's just like drag
