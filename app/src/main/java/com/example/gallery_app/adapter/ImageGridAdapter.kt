@@ -30,8 +30,8 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
     var mClickListener: ImageItemClickListener? = null
 
     override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int
+            parent: ViewGroup,
+            viewType: Int
     ): ImageGridAdapter.ImageColorViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_image_in_grid, parent, false)
         return this.ImageColorViewHolder(view)
@@ -53,21 +53,21 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
             .apply(options)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
-                    p0: GlideException?,
-                    p1: Any?,
-                    p2: Target<Drawable>?,
-                    p3: Boolean
+                        p0: GlideException?,
+                        p1: Any?,
+                        p2: Target<Drawable>?,
+                        p3: Boolean
                 ): Boolean {
                     Log.i("Files", "load failed")
                     return false
                 }
 
                 override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
                 ): Boolean {
                     if (holderImage.myPhoto.selected) {
                         resource?.setTint(Color.GRAY)
@@ -139,9 +139,9 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
                 else -> Log.i("Files", "short clicked unidentified")
             }
             mClickListener?.onItemClick(
-                view,
-                adapterPosition,
-                this
+                    view,
+                    adapterPosition,
+                    this
             )
         }
 
@@ -154,9 +154,9 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
                 else -> Log.i("Files", "long clicked unidentified")
             }
             mClickListener?.onLongItemClick(
-                view,
-                adapterPosition,
-                this
+                    view,
+                    adapterPosition,
+                    this
             )
             return true
         }

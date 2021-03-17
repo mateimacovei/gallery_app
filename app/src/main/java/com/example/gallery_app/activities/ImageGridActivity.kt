@@ -6,22 +6,20 @@ import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
 import android.util.Log
-import android.view.GestureDetector
-import android.view.MotionEvent
 import android.view.View
+import android.widget.AbsListView
 import android.widget.ImageButton
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.gallery_app.*
 import com.example.gallery_app.adapter.ImageGridAdapter
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
-import com.example.gallery_app.adapter.customViews.VELOCITY_THRESHOLD
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhoto
 import com.example.gallery_app.storageAccess.MyPhotoAlbum
 import kotlinx.android.synthetic.main.activity_image_grid.*
+
 
 const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
 
@@ -31,21 +29,6 @@ class ImageGridActivity : AppCompatActivity(),
     val holderImages: ArrayList<ImageGridAdapter.ImageColorViewHolder> = ArrayList()
     lateinit var album: MyPhotoAlbum
 
-
-//    val scrollListener = MyScrollListener()
-//    inner class MyScrollListener : RecyclerView.OnScrollListener()
-//    {
-//        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-//            super.onScrolled(recyclerView, dx, dy)
-//            if(dy>0)
-//                image_grid_toolbar.visibility = View.GONE
-//            if (dy<0)
-//                image_grid_toolbar.visibility = View.VISIBLE
-//
-//
-//        }
-//    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_grid)
@@ -53,7 +36,8 @@ class ImageGridActivity : AppCompatActivity(),
 
         val sglm = StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
         recycleViewerForImages.layoutManager = sglm
-//        recycleViewerForImages.addOnScrollListener(this.scrollListener)
+        val onFlingListener = MyOnFlingListener()
+        recycleViewerForImages.onFlingListener = onFlingListener
 
         album = Box.Get(intent, IMAGE_GRID_MESSAGE)
         Box.Remove(intent)
@@ -64,9 +48,23 @@ class ImageGridActivity : AppCompatActivity(),
 
         this.onConfigurationChanged(this.resources.configuration)
 
-//        supportActionBar.
-//        supportActionBar?.isHideOnContentScrollEnabled = true
         Log.i("Activity", "onCreate exit")
+    }
+
+    inner class MyOnFlingListener : RecyclerView.OnFlingListener() {
+        override fun onFling(velocityX: Int, velocityY: Int): Boolean {
+            if (velocityY > VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD) {
+                Log.i("Scroll", "scroll down")
+                if(!selectionMode)
+                    image_grid_toolbar.visibility = View.GONE
+            }
+            if (velocityY < VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD) {
+                Log.i("Scroll", "scroll up")
+                image_grid_toolbar.visibility = View.VISIBLE
+            }
+            return false //it was not handled. If I set it to true, it will not pass the event on to the inertia method
+        }
+
     }
 
     private fun loadPicturesFromAlbum(){
