@@ -82,7 +82,7 @@ class StaticMethods {
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     projection,
                     null, null,
-                    MediaStore.Images.Media.DATE_MODIFIED)
+                    MediaStore.Images.Media.DATE_MODIFIED+ " DESC")
         }
 
         /**
