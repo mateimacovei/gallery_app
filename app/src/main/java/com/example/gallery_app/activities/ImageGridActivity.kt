@@ -35,8 +35,6 @@ class ImageGridActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_grid)
         setSupportActionBar(image_grid_toolbar)
-//        var checkbox = layoutInflater.inflate(R.layout.activity_image_grid,image_grid_toolbar)
-//        image_grid_toolbar.addView(checkbox)
 
         val sglm = StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
         recycleViewerForImages.layoutManager = sglm
@@ -56,6 +54,27 @@ class ImageGridActivity : AppCompatActivity(),
         this.onConfigurationChanged(this.resources.configuration)
 
         Log.i("Activity", "onCreate exit")
+    }
+
+    private fun selectAll(){
+        for(holder in holderImages)
+            holder.setAsSelected()
+        for(photo in album.photos)
+            photo.selected=true
+        //both are needed, as there could be pictures selected that are in a holder that has been removed due to scrolling
+
+        selected=album.photos.size
+        toolbarCheckBox.text=selected.toString()
+    }
+
+    private fun unselectAll()
+    {
+        for(holder in holderImages)
+            holder.setAsUnselected()
+        for(photo in album.photos)
+            photo.selected=false
+        selected=0
+        toolbarCheckBox.text=selected.toString()
     }
 
     private fun enableSelectionMode(){
@@ -78,11 +97,11 @@ class ImageGridActivity : AppCompatActivity(),
         selected=0
         toolbarCheckBox.isChecked = false
         toolbarCheckBox.visibility = View.GONE
-        holderImages.forEach { holder ->
-            holder.disableSelectionMode()
-        }
-        album.photos.forEach{myPhoto -> myPhoto.selected=false }
-        //both are needed, as there could be pictures selected that are in a holder that has been removed due to scrolling
+        for(holder in holderImages)
+            holder.disableSelectionMode() //it's different from unselect all
+        for(photo in album.photos)
+            photo.selected=false
+        selected=0
     }
 
     private fun loadPicturesFromAlbum(){
@@ -175,12 +194,12 @@ class ImageGridActivity : AppCompatActivity(),
      * update toolbarCheckBox
      * calls imageColorViewHolder.reverseSelection()
      */
-    private fun reverseSelection(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder)
-    {
-        if(imageColorViewHolder.myPhoto.selected)
+    private fun reverseSelection(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder) {
+        if (imageColorViewHolder.myPhoto.selected)
             selected--
         else selected++
-        toolbarCheckBox.text=selected.toString()
+        toolbarCheckBox.text = selected.toString()
+        toolbarCheckBox.isChecked = (selected == album.photos.size)
 
         imageColorViewHolder.reverseSelection()
     }
@@ -214,7 +233,6 @@ class ImageGridActivity : AppCompatActivity(),
     ) {
 //        Toast.makeText(this, "Image LONG clicked $position", Toast.LENGTH_SHORT).show()
         if (!selectionMode) {
-            selected = 1
             enableSelectionMode()
         }
         reverseSelection(imageColorViewHolder)
@@ -232,17 +250,12 @@ class ImageGridActivity : AppCompatActivity(),
     }
 
     fun toolbarCheckBoxClicked(view: View) {
-        if(selectionMode){
-            if(toolbarCheckBox.isChecked)
-            {
-                for(holder in holderImages)
-                    holder.setAsSelected()
-            }
+        if (selectionMode) {
+            if (toolbarCheckBox.isChecked)
+                selectAll()
             else
-                for(holder in holderImages)
-                    holder.setAsUnselected()
-        }
-        else Log.w("Error","checkbox was clicked outside of selectionMode")
+                unselectAll()
+        } else Log.w("Error", "checkbox was clicked outside of selectionMode")
     }
 
 //    override fun onActivityReenter(resultCode: Int, data: Intent?) {
