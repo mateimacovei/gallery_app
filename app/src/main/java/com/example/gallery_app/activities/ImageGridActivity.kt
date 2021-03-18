@@ -6,6 +6,8 @@ import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
@@ -15,21 +17,20 @@ import com.example.gallery_app.*
 import com.example.gallery_app.adapter.ImageGridAdapter
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
 import com.example.gallery_app.storageAccess.Box
-import com.example.gallery_app.storageAccess.MyPhoto
 import com.example.gallery_app.storageAccess.MyPhotoAlbum
 import kotlinx.android.synthetic.main.activity_image_grid.*
-
+import kotlinx.android.synthetic.main.image_grid_menu.*
 
 const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
 
 class ImageGridActivity : AppCompatActivity(),
-    ImageItemClickListener{
+    ImageItemClickListener {
     //I need both, because I can have selection mode on with 0 selected
     var selectionMode: Boolean = false
-    var selected = 0
+    private var selected = 0
 
     val holderImages: ArrayList<ImageGridAdapter.ImageColorViewHolder> = ArrayList()
-    lateinit var album: MyPhotoAlbum
+    private lateinit var album: MyPhotoAlbum
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,10 +45,14 @@ class ImageGridActivity : AppCompatActivity(),
         album = Box.Get(intent, IMAGE_GRID_MESSAGE)
         Box.Remove(intent)
 
-        Log.i("Files","album being viewed: ${album.albumName}")
-        this.title = album.albumName
-        image_grid_toolbar.subtitle = album.photos.size.toString()
-        image_grid_toolbar.navigationIcon
+        Log.i("Files", "album being viewed: ${album.albumName}")
+//        image_grid_toolbar.navigationIcon //TO DO
+        layoutInflater.inflate(R.layout.image_grid_menu,image_grid_toolbar)
+        if(album.albumName.length<=20)
+            titleTextView.text = album.albumName
+        else
+            titleTextView.text = (album.albumName.subSequence(0,19).toString()+"...")
+        subtitleTextView.text= (album.photos.size.toString() + " images")
 
         loadPicturesFromAlbum()
 
@@ -56,62 +61,73 @@ class ImageGridActivity : AppCompatActivity(),
         Log.i("Activity", "onCreate exit")
     }
 
-    private fun selectAll(){
-        for(holder in holderImages)
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.image_grid_layout_menu, menu)
+        return true
+    }
+
+
+    private fun selectAll() {
+        for (holder in holderImages)
             holder.setAsSelected()
-        for(photo in album.photos)
-            photo.selected=true
+        for (photo in album.photos)
+            photo.selected = true
         //both are needed, as there could be pictures selected that are in a holder that has been removed due to scrolling
 
-        selected=album.photos.size
-        toolbarCheckBox.text=selected.toString()
+        selected = album.photos.size
+        toolbarCheckBox.text = selected.toString()
     }
 
-    private fun unselectAll()
-    {
-        for(holder in holderImages)
+    private fun unselectAll() {
+        for (holder in holderImages)
             holder.setAsUnselected()
-        for(photo in album.photos)
-            photo.selected=false
-        selected=0
-        toolbarCheckBox.text=selected.toString()
+        for (photo in album.photos)
+            photo.selected = false
+        selected = 0
+        toolbarCheckBox.text = selected.toString()
     }
 
-    private fun enableSelectionMode(){
-        selectionMode=true
+    private fun enableSelectionMode() {
+        selectionMode = true
         image_grid_toolbar.visibility = View.VISIBLE
+        titleTextView.visibility = View.GONE
+        imageGridNavigationImageButton.visibility = View.GONE
+        subtitleTextView.visibility = View.GONE
         toolbarCheckBox.visibility = View.VISIBLE
-        if(selected == album.photos.size)
+        if (selected == album.photos.size)
             toolbarCheckBox.isChecked = true
 
-        this.title=""
-        image_grid_toolbar.subtitle=""
+//        this.title = ""
+//        image_grid_toolbar.subtitle = ""
         for (holder in holderImages)
             holder.enableSelectionMode()
     }
 
-    private fun disableSelectionMode(){
-        this.title = album.albumName
-        image_grid_toolbar.subtitle = album.photos.size.toString()
-        selectionMode=false
-        selected=0
+    private fun disableSelectionMode() {
+        titleTextView.visibility = View.VISIBLE
+        subtitleTextView.visibility = View.VISIBLE
+        imageGridNavigationImageButton.visibility = View.VISIBLE
+//        this.title = album.albumName
+//        image_grid_toolbar.subtitle = album.photos.size.toString()
+        selectionMode = false
+        selected = 0
         toolbarCheckBox.isChecked = false
         toolbarCheckBox.visibility = View.GONE
-        for(holder in holderImages)
+        for (holder in holderImages)
             holder.disableSelectionMode() //it's different from unselect all
-        for(photo in album.photos)
-            photo.selected=false
-        selected=0
+        for (photo in album.photos)
+            photo.selected = false
+        selected = 0
     }
 
-    private fun loadPicturesFromAlbum(){
-        selected=0
+    private fun loadPicturesFromAlbum() {
+        selected = 0
         for (picture in album.photos)
-            if(picture.selected)
+            if (picture.selected)
                 selected++
-        if(selected>0)
+        if (selected > 0)
             enableSelectionMode()
-        else{
+        else {
             toolbarCheckBox.visibility = View.GONE
         }
 
@@ -179,7 +195,7 @@ class ImageGridActivity : AppCompatActivity(),
         }
     }
 
-    private fun startFullscreenActivity(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder){
+    private fun startFullscreenActivity(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder) {
         Log.i("Files", "Image to open: ${imageColorViewHolder.myPhoto}")
         val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
 
@@ -249,7 +265,7 @@ class ImageGridActivity : AppCompatActivity(),
         Log.i("Activity", "onResume exit")
     }
 
-    fun toolbarCheckBoxClicked(view: View) {
+    fun toolbarCheckBoxClicked(v: View) {
         if (selectionMode) {
             if (toolbarCheckBox.isChecked)
                 selectAll()
@@ -257,6 +273,28 @@ class ImageGridActivity : AppCompatActivity(),
                 unselectAll()
         } else Log.w("Error", "checkbox was clicked outside of selectionMode")
     }
+
+    fun selectMenuButtonClicked(item: MenuItem) {
+        toolbarCheckBox.text="0"
+        enableSelectionMode()
+    }
+
+    fun sortMenuButtonClicked(item: MenuItem) {
+        Log.i("Buttons", "clicked sortMenuButtonClicked")
+    }
+
+    fun gridMenuButtonClicked(item: MenuItem) {
+        Log.i("Buttons", "clicked gridMenuButtonClicked")
+    }
+
+    fun goodImageGridSearchClicked(v: View) {
+        Log.i("Buttons", "clicked good search")
+    }
+
+    fun backNavigationClicked(view: View) {
+        onBackPressed()
+    }
+
 
 //    override fun onActivityReenter(resultCode: Int, data: Intent?) {
 //        Log.i("Activity","onActivityReenter called")
