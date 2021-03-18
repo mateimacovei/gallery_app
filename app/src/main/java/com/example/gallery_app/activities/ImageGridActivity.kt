@@ -6,6 +6,7 @@ import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -18,6 +19,9 @@ import com.example.gallery_app.adapter.ImageGridAdapter
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhotoAlbum
+import com.example.gallery_app.storageAccess.SortBy
+import com.example.gallery_app.storageAccess.SortOrder
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
 
@@ -31,6 +35,9 @@ class ImageGridActivity : AppCompatActivity(),
 
     val holderImages: ArrayList<ImageGridAdapter.ImageColorViewHolder> = ArrayList()
     private lateinit var album: MyPhotoAlbum
+
+    var sortBy: SortBy = SortBy.DATE_MODIFIED
+    var sortOrder: SortOrder = SortOrder.DESC
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -280,7 +287,19 @@ class ImageGridActivity : AppCompatActivity(),
     }
 
     fun sortMenuButtonClicked(item: MenuItem) {
-        Log.i("Buttons", "clicked sortMenuButtonClicked")
+        val customAlertDialogView = LayoutInflater.from(this)
+                .inflate(R.layout.sort_menu_dialog, null, false)
+
+        MaterialAlertDialogBuilder(this)
+                .setView(customAlertDialogView)
+                .setTitle("Sort by")
+                .setNegativeButton("Cancel"){ dialog, which ->
+                    Log.i("Dialog","cancel clicked")
+                }
+                .setPositiveButton("Done") { dialog, which ->
+                    Log.i("Dialog","done clicked")
+                }
+                .show()
     }
 
     fun gridMenuButtonClicked(item: MenuItem) {
