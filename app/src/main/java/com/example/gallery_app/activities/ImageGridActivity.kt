@@ -21,6 +21,7 @@ import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyPhotoAlbum
 import com.example.gallery_app.storageAccess.SortBy
 import com.example.gallery_app.storageAccess.SortOrder
+import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhotoArrayForAlbum
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
@@ -34,7 +35,8 @@ class ImageGridActivity : AppCompatActivity(),
     private var selected = 0
 
     val holderImages: ArrayList<ImageGridAdapter.ImageColorViewHolder> = ArrayList()
-    private lateinit var album: MyPhotoAlbum
+    lateinit var imageGridAdapter: ImageGridAdapter
+    lateinit var album: MyPhotoAlbum
 
     var sortBy: SortBy = SortBy.DATE_MODIFIED
     var sortOrder: SortOrder = SortOrder.DESC
@@ -54,16 +56,14 @@ class ImageGridActivity : AppCompatActivity(),
 
         Log.i("Files", "album being viewed: ${album.albumName}")
 //        image_grid_toolbar.navigationIcon //TO DO
-        layoutInflater.inflate(R.layout.image_grid_menu,image_grid_toolbar)
-        if(album.albumName.length<=20)
+        layoutInflater.inflate(R.layout.image_grid_menu, image_grid_toolbar)
+        if (album.albumName.length <= 20)
             titleTextView.text = album.albumName
         else
-            titleTextView.text = (album.albumName.subSequence(0,19).toString()+"...")
-        subtitleTextView.text= (album.photos.size.toString() + " images")
-
-        loadPicturesFromAlbum()
+            titleTextView.text = (album.albumName.subSequence(0, 19).toString() + "...")
 
         this.onConfigurationChanged(this.resources.configuration)
+        loadPicturesFromAlbum()
 
         Log.i("Activity", "onCreate exit")
     }
@@ -103,9 +103,8 @@ class ImageGridActivity : AppCompatActivity(),
         toolbarCheckBox.visibility = View.VISIBLE
         if (selected == album.photos.size)
             toolbarCheckBox.isChecked = true
+        toolbarCheckBox.text = selected.toString()
 
-//        this.title = ""
-//        image_grid_toolbar.subtitle = ""
         for (holder in holderImages)
             holder.enableSelectionMode()
     }
@@ -125,9 +124,11 @@ class ImageGridActivity : AppCompatActivity(),
         for (photo in album.photos)
             photo.selected = false
         selected = 0
+        subtitleTextView.text = (album.photos.size.toString() + " images")
     }
 
     private fun loadPicturesFromAlbum() {
+        Log.i("Activity", "loadPicturesFromAlbum entered")
         selected = 0
         for (picture in album.photos)
             if (picture.selected)
@@ -135,12 +136,33 @@ class ImageGridActivity : AppCompatActivity(),
         if (selected > 0)
             enableSelectionMode()
         else {
-            toolbarCheckBox.visibility = View.GONE
+            disableSelectionMode()
         }
 
-        val iga = ImageGridAdapter(this, album.photos)
-        iga.setClickListener(this)
-        recycleViewerForImages.adapter = iga
+        imageGridAdapter = ImageGridAdapter(this, album.photos)
+        //I MUST NOT REPLACE album.photos with a new arrayList. Instead, clear and add in the old one
+        imageGridAdapter.setClickListener(this)
+        recycleViewerForImages.adapter = imageGridAdapter
+    }
+
+    private fun reloadPicturesFromAlbum() {
+        val result = getNewPhotoArrayForAlbum(this)
+        if (result.first) {
+            album.photos.clear()
+            album.photos.addAll(result.second)
+            imageGridAdapter.notifyDataSetChanged()
+
+            selected = 0
+            for (picture in album.photos)
+                if (picture.selected)
+                    selected++
+            if (selected > 0)
+                enableSelectionMode()
+            else {
+                disableSelectionMode()
+            }
+
+        }
     }
 
     inner class MyOnFlingListener : RecyclerView.OnFlingListener() {
@@ -264,11 +286,7 @@ class ImageGridActivity : AppCompatActivity(),
     override fun onResume() {
         Log.i("Activity", "onResume entered")
         super.onResume()
-
-//        val refreshedAlbum = StaticMethods.getOneAlbum(this, album.albumFullPath)
-//        Log.i("Files", "onResume in ImageViewGrid: found ${refreshedAlbum.albumCount} pictures")
-//        this.album=refreshedAlbum
-//        loadPicturesFromAlbum()
+        reloadPicturesFromAlbum()
         Log.i("Activity", "onResume exit")
     }
 
@@ -282,7 +300,7 @@ class ImageGridActivity : AppCompatActivity(),
     }
 
     fun selectMenuButtonClicked(item: MenuItem) {
-        toolbarCheckBox.text="0"
+        toolbarCheckBox.text = "0"
         enableSelectionMode()
     }
 
@@ -293,11 +311,11 @@ class ImageGridActivity : AppCompatActivity(),
         MaterialAlertDialogBuilder(this)
                 .setView(customAlertDialogView)
                 .setTitle("Sort by")
-                .setNegativeButton("Cancel"){ dialog, which ->
-                    Log.i("Dialog","cancel clicked")
+                .setNegativeButton("Cancel") { dialog, which ->
+                    Log.i("Dialog", "cancel clicked")
                 }
                 .setPositiveButton("Done") { dialog, which ->
-                    Log.i("Dialog","done clicked")
+                    Log.i("Dialog", "done clicked")
                 }
                 .show()
     }
@@ -314,10 +332,8 @@ class ImageGridActivity : AppCompatActivity(),
         onBackPressed()
     }
 
-
 //    override fun onActivityReenter(resultCode: Int, data: Intent?) {
 //        Log.i("Activity","onActivityReenter called")
 //        super.onActivityReenter(resultCode, data)
 //    }
-
 }

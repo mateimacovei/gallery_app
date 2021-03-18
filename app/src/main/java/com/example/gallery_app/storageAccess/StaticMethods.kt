@@ -9,6 +9,7 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.core.app.ActivityCompat.startIntentSenderForResult
+import com.example.gallery_app.activities.ImageGridActivity
 
 
 class StaticMethods {
@@ -24,12 +25,48 @@ class StaticMethods {
         )
 
         /**
+         * returns a pair
+         * First: Boolean, true if there were changes to the album
+         * Second: list of pictures from the album, taking into account the sorting parameters
+         * KEEPS the selection model
+         */
+        fun getNewPhotoArrayForAlbum(imageGridActivity: ImageGridActivity): Pair<Boolean, ArrayList<MyPhoto>> {
+            val oldPhotos = imageGridActivity.album.photos
+            val newPhotos = ArrayList<MyPhoto>()
+            var changed = false
+
+
+            val imageCursor: Cursor? = getPathFilterImageCursor(imageGridActivity, imageGridActivity.album.albumFullPath, getSortOrderString(SortBy.DATE_MODIFIED, SortOrder.DESC))
+            if (imageCursor == null) {
+                Log.w("Files", "failed to reload album: cursor was null")
+                return Pair(true, ArrayList())
+            }
+
+            val picturesMap: MutableMap<String, MyPhoto> = getPhotosFromCursor(imageCursor)
+
+            for (photo in oldPhotos)
+                if (photo.selected and picturesMap.containsKey(photo.DATA))
+                    picturesMap[photo.DATA]?.selected = true
+                else changed = true
+
+            for (photoFullPath in picturesMap.keys) {
+                val candidate = picturesMap[photoFullPath]
+                if (candidate?.albumFullPath == imageGridActivity.album.albumFullPath)
+                    newPhotos.add(candidate)
+            }
+
+            if (oldPhotos.size != newPhotos.size)
+                changed = true
+
+            return Pair(changed, newPhotos)
+        }
+
+        /**
          * return an List containing all the photo albums
          */
-        fun getAllAlbums(activity: Activity): ArrayList<MyPhotoAlbum>{
-            val imageCursor: Cursor? = getBasicImageCursor(activity)
-            if(imageCursor==null)
-            {
+        fun getAllAlbums(activity: Activity): ArrayList<MyPhotoAlbum> {
+            val imageCursor: Cursor? = getBasicImageCursor(activity, getSortOrderString(SortBy.DATE_MODIFIED, SortOrder.DESC))
+            if (imageCursor == null) {
                 Log.w("Files", "getBasicImageCursor returned null")
                 return ArrayList()
             }
@@ -45,7 +82,7 @@ class StaticMethods {
          * param: map Key=path, without picture name | Value = List of Photos in the same folder
          * return an List containing the photo albums
          */
-        private fun buildAlbumListFromPathMap(provAlbumMap: MutableMap<String,ArrayList<MyPhoto>>): ArrayList<MyPhotoAlbum>{
+        private fun buildAlbumListFromPathMap(provAlbumMap: MutableMap<String, ArrayList<MyPhoto>>): ArrayList<MyPhotoAlbum> {
             val albums = ArrayList<MyPhotoAlbum>()
 
             for (key in provAlbumMap.keys) {
@@ -59,7 +96,7 @@ class StaticMethods {
          * param: map: Key=picture name with full path | Value = MyPhoto object
          * returns: map Key=path, without picture name | Value = List of Photos in the same folder
          */
-        private fun convertFullPathPhotoMapToAlbumPathPhotoArrayMap(photos: MutableMap<String, MyPhoto>): MutableMap<String,ArrayList<MyPhoto>> {
+        private fun convertFullPathPhotoMapToAlbumPathPhotoArrayMap(photos: MutableMap<String, MyPhoto>): MutableMap<String, ArrayList<MyPhoto>> {
             val provAlbumMap: MutableMap<String, ArrayList<MyPhoto>> = mutableMapOf()
             for (key in photos.keys) {
                 val photo: MyPhoto? = photos[key]
@@ -74,27 +111,42 @@ class StaticMethods {
             return provAlbumMap
         }
 
+        private fun getSortOrderString(sortBy: SortBy, sortOrder: SortOrder): String {
+            var res: String = when (sortBy) {
+                SortBy.NAME -> MediaStore.Images.Media.DISPLAY_NAME
+                SortBy.DATE_CREATED -> MediaStore.Images.Media.DATE_ADDED
+                SortBy.DATE_MODIFIED -> MediaStore.Images.Media.DATE_MODIFIED
+            }
+
+            when (sortOrder) {
+                SortOrder.DESC -> res += " DESC"
+                SortOrder.ASC -> {
+                }
+            }
+            return res
+        }
+
         /**
          * return a image cursor using the static projection, with no other parameters other than sort order DATE_MODIFIED
          */
-        private fun getBasicImageCursor(activity: Activity): Cursor? {
+        private fun getBasicImageCursor(activity: Activity, sortOrder: String): Cursor? {
             return activity.contentResolver.query(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     projection,
                     null, null,
-                    MediaStore.Images.Media.DATE_MODIFIED+ " DESC")
+                    sortOrder)
         }
 
         /**
          * return a cursor over the images containing the given path
          * it will return pictures in a folder AND IN ITS SUB-FOLDERS
          */
-        fun getPathFilterImageCursor(activity: Activity,path:String): Cursor?{
+        fun getPathFilterImageCursor(activity: Activity, path: String, sortOrder: String): Cursor? {
             return activity.contentResolver.query(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     projection,
                     MediaStore.Files.FileColumns.DATA + " LIKE ?", arrayOf("$path%"),
-                    MediaStore.Images.Media.DATE_MODIFIED)
+                    sortOrder)
         }
 
         /**
