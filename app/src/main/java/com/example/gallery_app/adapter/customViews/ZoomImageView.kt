@@ -23,7 +23,7 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
     var last = PointF()
     var start = PointF()
     var minScale = 1f
-    var maxScale = 3f
+    var maxScale = 4f
     lateinit var m: FloatArray
     var viewWidth = 0
     var viewHeight = 0

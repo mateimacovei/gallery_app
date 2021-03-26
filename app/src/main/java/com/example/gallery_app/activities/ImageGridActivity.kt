@@ -11,6 +11,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -212,13 +214,13 @@ class ImageGridActivity : AppCompatActivity(),
 
         when (newConfig.orientation) {
             ORIENTATION_PORTRAIT -> recycleViewerForImages.layoutManager =
-                    StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
+                StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
             ORIENTATION_LANDSCAPE -> recycleViewerForImages.layoutManager =
-                    StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
+                StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
             else -> { // Note the block
                 Log.w(
-                        "Orientation",
-                        "Orientation in ImageGridKotlinActivity was undefined at configuration change"
+                    "Orientation",
+                    "Orientation in ImageGridKotlinActivity was undefined at configuration change"
                 )
             }
         }
@@ -229,7 +231,11 @@ class ImageGridActivity : AppCompatActivity(),
         val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
 
         Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_ARRAY, this.album.photos)
-        Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_POSITION, imageColorViewHolder.photoPositionInMyArray)
+        Box.Add(
+            intentFullScreenImage,
+            FULLSCREEN_IMAGE_POSITION,
+            imageColorViewHolder.photoPositionInMyArray
+        )
 
         this.startActivity(intentFullScreenImage)
     }
@@ -253,9 +259,9 @@ class ImageGridActivity : AppCompatActivity(),
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onItemClick(
-            view: View,
-            position: Int,
-            imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder
+        view: View,
+        position: Int,
+        imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder
     ) {
         if (view is ImageButton) { //important to check ImageButton first, as ImageButton extends ImageView
             startFullscreenActivity(imageColorViewHolder)
@@ -272,9 +278,9 @@ class ImageGridActivity : AppCompatActivity(),
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onLongItemClick(
-            view: View,
-            position: Int,
-            imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder
+        view: View,
+        position: Int,
+        imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder
     ) {
 //        Toast.makeText(this, "Image LONG clicked $position", Toast.LENGTH_SHORT).show()
         if (!selectionMode) {
@@ -308,6 +314,27 @@ class ImageGridActivity : AppCompatActivity(),
         val customAlertDialogView = LayoutInflater.from(this)
                 .inflate(R.layout.sort_menu_dialog, null, false)
 
+        val radioGroupSortBy: RadioGroup = customAlertDialogView.findViewById(R.id.radioGroupSortBy)
+        val radioGroupSortOrder: RadioGroup = customAlertDialogView.findViewById(R.id.RadioGroupSortOrder)
+
+        val nameRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.nameRadioButton)
+        val dateCreatedRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.dateCreatedRadioButton)
+        val dateModifiedRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.dateModifiedRadioButton)
+        val descendingRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.descendingRadioButton)
+        val ascendingRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.ascendingRadioButton)
+
+        when (sortBy) {
+            SortBy.NAME -> nameRadioButton.isChecked = true
+            SortBy.DATE_CREATED -> dateCreatedRadioButton.isChecked = true
+            SortBy.DATE_MODIFIED -> dateModifiedRadioButton.isChecked = true
+        }
+
+        when (sortOrder)
+        {
+            SortOrder.DESC -> descendingRadioButton.isChecked = true
+            SortOrder.ASC -> ascendingRadioButton.isChecked = true
+        }
+
         MaterialAlertDialogBuilder(this)
                 .setView(customAlertDialogView)
                 .setTitle("Sort by")
@@ -316,6 +343,22 @@ class ImageGridActivity : AppCompatActivity(),
                 }
                 .setPositiveButton("Done") { dialog, which ->
                     Log.i("Dialog", "done clicked")
+                    var checkId = radioGroupSortBy.checkedRadioButtonId
+                    var radioButton: View = radioGroupSortBy.findViewById(checkId)
+
+                    when (radioGroupSortBy.indexOfChild(radioButton)){
+                        0->sortBy=SortBy.DATE_CREATED
+                        1->sortBy=SortBy.DATE_MODIFIED
+                        2->sortBy=SortBy.NAME
+                    }
+
+                    checkId = radioGroupSortOrder.checkedRadioButtonId
+                    radioButton = radioGroupSortOrder.findViewById(checkId)
+
+                    when (radioGroupSortOrder.indexOfChild(radioButton)){
+                        0->sortOrder=SortOrder.ASC
+                        1->sortOrder=SortOrder.DESC
+                    }
                 }
                 .show()
     }

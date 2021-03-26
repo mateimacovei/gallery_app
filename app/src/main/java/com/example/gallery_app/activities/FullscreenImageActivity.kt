@@ -126,7 +126,8 @@ class FullscreenImageActivity : AppCompatActivity(){
     }
 
     fun updateCurrentDisplayedPicture(){
-        this.title = myPhotoArray[currentPosition].name
+//        this.title = myPhotoArray[currentPosition].name
+        title = "";
 
         val options: RequestOptions = RequestOptions()
                 .centerCrop()

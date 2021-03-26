@@ -8,7 +8,7 @@
     android:layout_gravity="left">
 
     <RadioGroup
-        android:id="@+id/radioGroup"
+        android:id="@+id/radioGroupSortBy"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
@@ -35,6 +35,7 @@
     </RadioGroup>
 
     <RadioGroup
+        android:id="@+id/RadioGroupSortOrder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -62,7 +63,8 @@
         android:layout_height="wrap_content"
         android:text="Order"
         android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/RadioGroupSortOrder"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+        app:layout_constraintTop_toBottomOf="@+id/radioGroupSortBy" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
