@@ -21,11 +21,12 @@ import com.bumptech.glide.request.target.Target
 import com.example.gallery_app.R
 import com.example.gallery_app.activities.ImageGridActivity
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
+import com.example.gallery_app.storageAccess.MyMediaObject
 import com.example.gallery_app.storageAccess.MyPhoto
 import kotlinx.android.synthetic.main.item_image_in_grid.view.*
 import java.util.*
 
-class ImageGridAdapter(private val context: ImageGridActivity, private val images: ArrayList<MyPhoto>) :
+class ImageGridAdapter(private val context: ImageGridActivity, private val images: ArrayList<MyMediaObject>) :
         RecyclerView.Adapter<ImageGridAdapter.ImageColorViewHolder>() {
     var mClickListener: ImageItemClickListener? = null
 
@@ -41,48 +42,51 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
 //        Log.i("Files", "onbindViewHolder called")
 
         //THIS IS THE ONLY PLACE WHERE I HAVE BOTH THE ITEM VIEW AND THE POSITION OF THE ITEM IN THE ORIGINAL DATA
-        holderImage.myPhoto = images[position]
+        holderImage.myMediaObject = images[position]
         holderImage.photoPositionInMyArray = position
 
         val options: RequestOptions = RequestOptions()
-            .centerCrop()
-            .error(R.mipmap.ic_launcher_round)
+                .centerCrop()
+                .error(R.mipmap.ic_launcher_round)
 
-        Glide.with(context)
-            .load(holderImage.myPhoto.uri)
-            .apply(options)
-            .listener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                        p0: GlideException?,
-                        p1: Any?,
-                        p2: Target<Drawable>?,
-                        p3: Boolean
-                ): Boolean {
-                    Log.i("Files", "load failed")
-                    return false
+        val listener = object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                    p0: GlideException?,
+                    p1: Any?,
+                    p2: Target<Drawable>?,
+                    p3: Boolean
+            ): Boolean {
+                Log.i("Files", "load failed")
+                return false
+            }
+
+            override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+            ): Boolean {
+                if (holderImage.myMediaObject.selected) {
+                    //TO DO: Tint not working on gifs
+                    resource?.setTint(Color.GRAY)
+                    resource?.setTintBlendMode(BlendMode.MODULATE)
                 }
-
-                override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                ): Boolean {
-                    if (holderImage.myPhoto.selected) {
-                        resource?.setTint(Color.GRAY)
-                        resource?.setTintBlendMode(BlendMode.MODULATE)
-                    }
 //                    holder.updatePictureBySelection()
 //                    holder.imageView.drawable.setTint(Color.GREEN)
-                    return false
-                }
+                return false
+            }
 
-            })
-            .into(holderImage.imageView)
+        }
+
+        Glide.with(context)
+                    .load(holderImage.myMediaObject.uri)
+                    .apply(options)
+                    .listener(listener)
+                    .into(holderImage.imageView)
 
         if (context.selectionMode) {
-            holderImage.checkBox.isChecked = holderImage.myPhoto.selected
+            holderImage.checkBox.isChecked = holderImage.myMediaObject.selected
         } else {
             holderImage.checkBox.visibility = View.GONE
             holderImage.imageButtonFullscreen.visibility = View.GONE
@@ -107,7 +111,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
         val imageView: ImageView = view.imageViewPicture
         val checkBox: CheckBox = view.checkBoxImage
         val imageButtonFullscreen: ImageButton = view.imageButtonFullscreen
-        lateinit var myPhoto: MyPhoto
+        lateinit var myMediaObject: MyMediaObject
         var photoPositionInMyArray: Int = 0
 
         init {
@@ -166,7 +170,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
          * calls setAsSelected() is the picture is unselected, setAsUnselected() otherwise
          */
         fun reverseSelection() {
-            if (myPhoto.selected)
+            if (myMediaObject.selected)
                 setAsUnselected()
             else setAsSelected()
         }
@@ -199,7 +203,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
             checkBox.isChecked = true
             imageView.drawable.setTint(Color.GRAY)
             imageView.drawable.setTintBlendMode(BlendMode.MODULATE)
-            myPhoto.selected = true
+            myMediaObject.selected = true
         }
 
         /**
@@ -211,7 +215,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
         fun setAsUnselected() {
             checkBox.isChecked = false
             imageView.drawable?.setTintList(null)
-            myPhoto.selected = false
+            myMediaObject.selected = false
         }
     }
 

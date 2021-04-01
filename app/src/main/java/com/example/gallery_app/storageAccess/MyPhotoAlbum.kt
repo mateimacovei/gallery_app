@@ -1,6 +1,6 @@
 package com.example.gallery_app.storageAccess
 
-class MyPhotoAlbum(val albumFullPath: String, var photos: ArrayList<MyPhoto>) {
+class MyPhotoAlbum(val albumFullPath: String, var mediaObjects: ArrayList<MyMediaObject>) {
     val albumName: String
     var selected: Boolean = false
 
@@ -11,8 +11,8 @@ class MyPhotoAlbum(val albumFullPath: String, var photos: ArrayList<MyPhoto>) {
 
     fun getNrSelected(): Int{
         var selectedNr = 0
-        for (picture in photos)
-            if (picture.selected)
+        for (mediaObject in mediaObjects)
+            if (mediaObject.selected)
                 selectedNr++
         return selectedNr
     }

@@ -2,22 +2,14 @@ package com.example.gallery_app.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.IntentSender.SendIntentException
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.provider.MediaStore
 import android.util.Log
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnTouchListener
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
@@ -26,6 +18,7 @@ import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
 import com.example.gallery_app.adapter.customViews.ZoomImageView
 import com.example.gallery_app.storageAccess.Box
+import com.example.gallery_app.storageAccess.MyMediaObject
 import com.example.gallery_app.storageAccess.MyPhoto
 
 
@@ -35,12 +28,12 @@ private const val DEBUG_TAG = "Gestures"
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-class FullscreenImageActivity : AppCompatActivity(){
+class FullscreenImageActivity : AppCompatActivity() {
     private lateinit var fullscreenContent: ZoomImageView
     private lateinit var fullscreenContentControls: LinearLayout
     private val hideHandler = Handler()
 
-    private lateinit var myPhotoArray: ArrayList<MyPhoto>
+    private lateinit var myMediaObjectsArray: ArrayList<MyMediaObject>
     private var currentPosition: Int = 0
 
     @SuppressLint("InlinedApi")
@@ -51,12 +44,12 @@ class FullscreenImageActivity : AppCompatActivity(){
         // and API 19 (KitKat). It is safe to use them, as they are inlined
         // at compile-time and do nothing on earlier devices.
         fullscreenContent.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LOW_PROFILE or
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                View.SYSTEM_UI_FLAG_LOW_PROFILE or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
     }
 
     private val showPart2Runnable = Runnable {
@@ -108,7 +101,7 @@ class FullscreenImageActivity : AppCompatActivity(){
 
 
 
-        myPhotoArray = Box.Get(intent, FULLSCREEN_IMAGE_ARRAY)
+        myMediaObjectsArray = Box.Get(intent, FULLSCREEN_IMAGE_ARRAY)
         currentPosition = Box.Get(intent, FULLSCREEN_IMAGE_POSITION)
         Box.Remove(intent)
 
@@ -125,15 +118,15 @@ class FullscreenImageActivity : AppCompatActivity(){
         toggle()    //I shuld modify the rest of onCreate to start with fullscreen mode
     }
 
-    fun updateCurrentDisplayedPicture(){
+    private fun updateCurrentDisplayedPicture() {
 //        this.title = myPhotoArray[currentPosition].name
-        title = "";
+        title = ""
 
         val options: RequestOptions = RequestOptions()
                 .centerCrop()
                 .error(R.mipmap.ic_launcher_round)
         Glide.with(this)
-                .load( myPhotoArray[currentPosition].uri)
+                .load(myMediaObjectsArray[currentPosition].uri)
                 .apply(options)
                 .fitCenter()
                 .into(fullscreenContent)
@@ -170,8 +163,8 @@ class FullscreenImageActivity : AppCompatActivity(){
     private fun show() {
         // Show the system bar
         fullscreenContent.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         isFullscreen = true
 
         // Schedule a runnable to display UI elements after a delay
@@ -210,33 +203,32 @@ class FullscreenImageActivity : AppCompatActivity(){
         //if I have this lower that 300, the image will not re-center when the upper bar is hidden
     }
 
-    fun swipeLeft()
-    {
-        if(currentPosition<myPhotoArray.size-1)
-        {
+    fun swipeLeft() {
+        if (currentPosition < myMediaObjectsArray.size - 1) {
             currentPosition++
             updateCurrentDisplayedPicture()
         }
     }
 
-    fun swipeRight(){
-        if(currentPosition>0)
-        {
+    fun swipeRight() {
+        if (currentPosition > 0) {
             currentPosition--
             updateCurrentDisplayedPicture()
         }
     }
 
-    fun swipeUp(){
-        val intentDetailsPage = Intent(this,ImageDetailActivity::class.java)
-        Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myPhotoArray[currentPosition])
+    fun swipeUp() {
+        val intentDetailsPage = Intent(this, ImageDetailActivity::class.java)
+        Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myMediaObjectsArray[currentPosition])
         this.startActivity(intentDetailsPage)
     }
 
-    fun swipeDown(){onBackPressed()}
+    fun swipeDown() {
+        onBackPressed()
+    }
 
     fun leftChipClicked(view: View) {
-        val uri =  myPhotoArray[currentPosition].uri
+        val uri = myMediaObjectsArray[currentPosition].uri
 
         val editIntent = Intent(Intent.ACTION_EDIT)
         editIntent.setDataAndType(uri, "image/*")
@@ -245,7 +237,7 @@ class FullscreenImageActivity : AppCompatActivity(){
     }
 
     fun middleChipClicked(view: View) {
-        val uri =  myPhotoArray[currentPosition].uri
+        val uri = myMediaObjectsArray[currentPosition].uri
 
         val sharingIntent = Intent(Intent.ACTION_SEND)
         sharingIntent.type = "image/*"

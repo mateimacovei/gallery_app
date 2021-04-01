@@ -140,18 +140,18 @@ class ImageGridActivity : AppCompatActivity(),
     private fun selectAll() {
         for (holder in holderImages)
             holder.setAsSelected()
-        for (photo in album.photos)
+        for (photo in album.mediaObjects)
             photo.selected = true
         //both are needed, as there could be pictures selected that are in a holder that has been removed due to scrolling
 
-        selected = album.photos.size
+        selected = album.mediaObjects.size
         toolbarCheckBox.text = selected.toString()
     }
 
     private fun unselectAll() {
         for (holder in holderImages)
             holder.setAsUnselected()
-        for (photo in album.photos)
+        for (photo in album.mediaObjects)
             photo.selected = false
         selected = 0
         toolbarCheckBox.text = selected.toString()
@@ -164,7 +164,7 @@ class ImageGridActivity : AppCompatActivity(),
         imageGridNavigationImageButton.visibility = View.GONE
         subtitleTextView.visibility = View.GONE
         toolbarCheckBox.visibility = View.VISIBLE
-        if (selected == album.photos.size)
+        if (selected == album.mediaObjects.size)
             toolbarCheckBox.isChecked = true
         toolbarCheckBox.text = selected.toString()
 
@@ -184,10 +184,10 @@ class ImageGridActivity : AppCompatActivity(),
         toolbarCheckBox.visibility = View.GONE
         for (holder in holderImages)
             holder.disableSelectionMode() //it's different from unselect all
-        for (photo in album.photos)
+        for (photo in album.mediaObjects)
             photo.selected = false
         selected = 0
-        subtitleTextView.text = (album.photos.size.toString() + " images")
+        subtitleTextView.text = (album.mediaObjects.size.toString() + " images")
     }
 
     private fun loadPicturesFromAlbum() {
@@ -197,8 +197,8 @@ class ImageGridActivity : AppCompatActivity(),
             //TO DO elimina albumul din album grid
             finish()
         }
-        album.photos.clear()
-        album.photos.addAll(result.second)
+        album.mediaObjects.clear()
+        album.mediaObjects.addAll(result.second)
 
         selected = album.getNrSelected()
         if (selected > 0)
@@ -207,7 +207,7 @@ class ImageGridActivity : AppCompatActivity(),
             disableSelectionMode()
 
 
-        imageGridAdapter = ImageGridAdapter(this, album.photos)
+        imageGridAdapter = ImageGridAdapter(this, album.mediaObjects)
 //        I MUST NOT REPLACE album.photos with a new arrayList. Instead, clear and add in the old one
         imageGridAdapter.setClickListener(this)
         recycleViewerForImages.adapter = imageGridAdapter
@@ -221,8 +221,8 @@ class ImageGridActivity : AppCompatActivity(),
                 //TO DO elimina albumul din album grid
                 finish()
             }
-            album.photos.clear()
-            album.photos.addAll(result.second)
+            album.mediaObjects.clear()
+            album.mediaObjects.addAll(result.second)
             imageGridAdapter.notifyDataSetChanged()
 
             selected = album.getNrSelected()
@@ -293,10 +293,10 @@ class ImageGridActivity : AppCompatActivity(),
     }
 
     private fun startFullscreenActivity(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder) {
-        Log.i("Files", "Image to open: ${imageColorViewHolder.myPhoto}")
+        Log.i("Files", "Image to open: ${imageColorViewHolder.myMediaObject}")
         val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
 
-        Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_ARRAY, this.album.photos)
+        Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_ARRAY, this.album.mediaObjects)
         Box.Add(
                 intentFullScreenImage,
                 FULLSCREEN_IMAGE_POSITION,
@@ -312,11 +312,11 @@ class ImageGridActivity : AppCompatActivity(),
      * calls imageColorViewHolder.reverseSelection()
      */
     private fun reverseSelection(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder) {
-        if (imageColorViewHolder.myPhoto.selected)
+        if (imageColorViewHolder.myMediaObject.selected)
             selected--
         else selected++
         toolbarCheckBox.text = selected.toString()
-        toolbarCheckBox.isChecked = (selected == album.photos.size)
+        toolbarCheckBox.isChecked = (selected == album.mediaObjects.size)
 
         imageColorViewHolder.reverseSelection()
     }

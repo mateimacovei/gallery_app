@@ -10,38 +10,26 @@ import java.io.IOException
 
 
 class MyPhoto(
-        var uri: Uri,
-        var DATA: String,
-        var RELATIVE_PATH: String?,
-        var DATE_MODIFIED: String?,
+        uri: Uri,
+        DATA: String,
+        RELATIVE_PATH: String?,
+        DATE_MODIFIED: String?,
         SIZE: String?,
-        var WIDTH: String?,
-        var HEIGHT: String?,
-) {
-
-    var SIZE: Double? = SIZE?.toDouble()
-    var selected: Boolean = false
-    var name: String
-    var albumFullPath: String
-
-    init {
-        var splitPath = this.DATA.split('/')
-        this.name = splitPath.last()
-        splitPath = splitPath.dropLast(1)
-        this.albumFullPath = splitPath.joinToString(separator = "/")
-    }
+        WIDTH: String?,
+        HEIGHT: String?
+) : MyMediaObject(uri, DATA, RELATIVE_PATH, DATE_MODIFIED, SIZE, WIDTH, HEIGHT) {
 
     override fun toString(): String {
-        return "uri:$uri |  name:$name | path(data):${this.DATA} | realtive path:$RELATIVE_PATH | date modified:$DATE_MODIFIED | size:$SIZE | width:$WIDTH | height:$HEIGHT"
+        return "IMAGE: ${super.toString()}"
     }
 
-    fun reloadDimensions(activity: Activity) {
+    override fun reloadDimensions(activity: Activity) {
         reloadDimensionsFromExif(activity)
         if (this.HEIGHT == null)
             reloadDimensionsFromBitmap()
     }
 
-    fun reloadDimensionsFromExif(activity: Activity) {
+    private fun reloadDimensionsFromExif(activity: Activity) {
         try {
             activity.contentResolver.openInputStream(uri).use { inputStream ->
                 val exif: ExifInterface? = inputStream?.let { ExifInterface(it) }

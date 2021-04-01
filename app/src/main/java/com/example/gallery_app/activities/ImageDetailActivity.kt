@@ -13,13 +13,15 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
 import com.example.gallery_app.storageAccess.Box
+import com.example.gallery_app.storageAccess.MyMediaObject
 import com.example.gallery_app.storageAccess.MyPhoto
 import kotlinx.android.synthetic.main.activity_image_detail.*
+import kotlinx.android.synthetic.main.image_grid_menu.*
 import java.util.*
 
 
 class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
-    lateinit var photo: MyPhoto
+    lateinit var photo: MyMediaObject
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_detail)
@@ -32,7 +34,11 @@ class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListen
         textViewDate.text = SimpleDateFormat("dd MMMM yyyy").format(
                 photo.DATE_MODIFIED?.toLong()?.times(1000)?.let { Date(it) })
 
-        textViewTitle.text = photo.name
+//        textViewTitle.text = photo.name
+        if (photo.name.length <= 30)
+            textViewTitle.text = photo.name
+        else
+            textViewTitle.text = (photo.name.subSequence(0, 30).toString() + "...")
 
         textViewPath.text = photo.albumFullPath
 

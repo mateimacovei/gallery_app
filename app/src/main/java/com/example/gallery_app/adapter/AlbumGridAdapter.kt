@@ -41,9 +41,9 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
             .centerCrop()
             .error(R.mipmap.ic_launcher_round)
 
-        if (holder.album.photos.size > 0)
+        if (holder.album.mediaObjects.size > 0)
             Glide.with(context)
-                .load(holder.album.photos[0].uri)
+                .load(holder.album.mediaObjects[0].uri)
                 .apply(options)
                 .listener(object : RequestListener<Drawable> {
                     override fun onLoadFailed(
@@ -82,7 +82,7 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
         }
 
         holder.albumNameTextView.text = holder.album.albumName
-        holder.albumCountTextView.text = holder.album.photos.size.toString()
+        holder.albumCountTextView.text = holder.album.mediaObjects.size.toString()
 
 //        holder.imageView.setOnClickListener {
 //            //handle click event on image
