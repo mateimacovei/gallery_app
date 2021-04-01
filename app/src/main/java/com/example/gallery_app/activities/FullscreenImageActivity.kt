@@ -2,6 +2,7 @@ package com.example.gallery_app.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -20,6 +21,8 @@ import com.example.gallery_app.adapter.customViews.ZoomImageView
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyMediaObject
 import com.example.gallery_app.storageAccess.MyPhoto
+import com.example.gallery_app.storageAccess.MyVideo
+import kotlinx.android.synthetic.main.activity_fullscreen_image.*
 
 
 private const val DEBUG_TAG = "Gestures"
@@ -121,6 +124,11 @@ class FullscreenImageActivity : AppCompatActivity() {
     private fun updateCurrentDisplayedPicture() {
 //        this.title = myPhotoArray[currentPosition].name
         title = ""
+
+        if (myMediaObjectsArray[currentPosition] is MyVideo)
+            imageViewPlayButton.visibility = View.VISIBLE
+        else
+            imageViewPlayButton.visibility = View.GONE
 
         val options: RequestOptions = RequestOptions()
                 .centerCrop()
@@ -231,7 +239,15 @@ class FullscreenImageActivity : AppCompatActivity() {
         val uri = myMediaObjectsArray[currentPosition].uri
 
         val editIntent = Intent(Intent.ACTION_EDIT)
-        editIntent.setDataAndType(uri, "image/*")
+
+        if (myMediaObjectsArray[currentPosition] is MyPhoto)
+//            editIntent.setDataAndType(uri, "image/*")
+            editIntent.type = "image/*"
+        else
+//            editIntent.setDataAndType(uri, "video/*")
+            editIntent.type = "video/*"
+
+        editIntent.putExtra(Intent.EXTRA_STREAM, uri)
         editIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         startActivity(Intent.createChooser(editIntent, null))
     }
@@ -240,8 +256,12 @@ class FullscreenImageActivity : AppCompatActivity() {
         val uri = myMediaObjectsArray[currentPosition].uri
 
         val sharingIntent = Intent(Intent.ACTION_SEND)
-        sharingIntent.type = "image/*"
+        if (myMediaObjectsArray[currentPosition] is MyPhoto)
+            sharingIntent.type = "image/*"
+        else
+            sharingIntent.type = "video/*"
         sharingIntent.putExtra(Intent.EXTRA_STREAM, uri)
+//        sharingIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         startActivity(Intent.createChooser(sharingIntent, "Share image using"))
 
     }
@@ -254,4 +274,13 @@ class FullscreenImageActivity : AppCompatActivity() {
         // TO DO : IMPLEMENT DELETE
     }
 
+    fun imagePlayButtonClicked(view: View) {
+        val uri = myMediaObjectsArray[currentPosition].uri
+        val playIntent = Intent(Intent.ACTION_VIEW)
+//        playIntent.type = "video/*"
+//        playIntent.putExtra(Intent.EXTRA_STREAM, uri)
+//        startActivity(Intent.createChooser(playIntent, "Play video using"))
+        playIntent.setDataAndType(uri, "video/*");
+        startActivity(playIntent);
+    }
 }
