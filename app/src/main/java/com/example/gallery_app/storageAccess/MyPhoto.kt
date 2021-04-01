@@ -16,9 +16,10 @@ class MyPhoto(
         var DATE_MODIFIED: String?,
         SIZE: String?,
         var WIDTH: String?,
-        var HEIGHT: String?
+        var HEIGHT: String?,
 ) {
-    var SIZE: String? = "%.2f".format(SIZE?.toDouble()?.div(1024))
+
+    var SIZE: Double? = SIZE?.toDouble()
     var selected: Boolean = false
     var name: String
     var albumFullPath: String

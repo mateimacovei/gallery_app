@@ -36,8 +36,26 @@ class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListen
 
         textViewPath.text = photo.albumFullPath
 
-        (photo.SIZE + " Kb").also { textViewSize.text = it }
+//        (photo.SIZE + " b").also { textViewSize.text = it }
         // TO DO : make switch case for kb,mb; also use B, not b
+
+        if(photo.SIZE!=null) {
+            var size: Double = photo.SIZE!!
+            val rate =1025
+
+            if (size / rate < rate)
+                ("${"%.2f".format(size / rate)} KB").also { textViewSize.text = it }
+            else {
+                size /= rate
+                if (size / rate < rate)
+                    ("${"%.2f".format(size / rate)} MB").also { textViewSize.text = it }
+                else {
+                    size /= rate
+                    ("${"%.2f".format(size / rate)} GB").also { textViewSize.text = it }
+                }
+            }
+        }
+        //"%.2f".format(SIZE?.toDouble()?.div(1024))
 
         Log.i("Data", "width: ${photo.WIDTH}, height: ${photo.HEIGHT}")
         if (photo.HEIGHT == null) {

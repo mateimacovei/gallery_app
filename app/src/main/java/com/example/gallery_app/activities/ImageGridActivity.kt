@@ -4,7 +4,10 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -27,6 +30,7 @@ import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhoto
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
+
 
 const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
 
@@ -72,6 +76,14 @@ class ImageGridActivity : AppCompatActivity(),
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.image_grid_layout_menu, menu)
+
+        for (i in 0 until menu!!.size()) {
+            val item = menu.getItem(i)
+            val spanString = SpannableString(menu.getItem(i).title.toString())
+            spanString.setSpan(ForegroundColorSpan(Color.WHITE), 0, spanString.length, 0) //fix the color to white
+            item.title = spanString
+        }
+
         return true
     }
 
@@ -214,13 +226,13 @@ class ImageGridActivity : AppCompatActivity(),
 
         when (newConfig.orientation) {
             ORIENTATION_PORTRAIT -> recycleViewerForImages.layoutManager =
-                StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
+                    StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
             ORIENTATION_LANDSCAPE -> recycleViewerForImages.layoutManager =
-                StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
+                    StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
             else -> { // Note the block
                 Log.w(
-                    "Orientation",
-                    "Orientation in ImageGridKotlinActivity was undefined at configuration change"
+                        "Orientation",
+                        "Orientation in ImageGridKotlinActivity was undefined at configuration change"
                 )
             }
         }
@@ -232,9 +244,9 @@ class ImageGridActivity : AppCompatActivity(),
 
         Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_ARRAY, this.album.photos)
         Box.Add(
-            intentFullScreenImage,
-            FULLSCREEN_IMAGE_POSITION,
-            imageColorViewHolder.photoPositionInMyArray
+                intentFullScreenImage,
+                FULLSCREEN_IMAGE_POSITION,
+                imageColorViewHolder.photoPositionInMyArray
         )
 
         this.startActivity(intentFullScreenImage)
@@ -259,9 +271,9 @@ class ImageGridActivity : AppCompatActivity(),
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onItemClick(
-        view: View,
-        position: Int,
-        imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder
+            view: View,
+            position: Int,
+            imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder,
     ) {
         if (view is ImageButton) { //important to check ImageButton first, as ImageButton extends ImageView
             startFullscreenActivity(imageColorViewHolder)
@@ -278,9 +290,9 @@ class ImageGridActivity : AppCompatActivity(),
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onLongItemClick(
-        view: View,
-        position: Int,
-        imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder
+            view: View,
+            position: Int,
+            imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder,
     ) {
 //        Toast.makeText(this, "Image LONG clicked $position", Toast.LENGTH_SHORT).show()
         if (!selectionMode) {
@@ -347,17 +359,17 @@ class ImageGridActivity : AppCompatActivity(),
                     var radioButton: View = radioGroupSortBy.findViewById(checkId)
 
                     when (radioGroupSortBy.indexOfChild(radioButton)){
-                        0->sortBy=SortBy.DATE_CREATED
-                        1->sortBy=SortBy.DATE_MODIFIED
-                        2->sortBy=SortBy.NAME
+                        0 -> sortBy = SortBy.DATE_CREATED
+                        1 -> sortBy = SortBy.DATE_MODIFIED
+                        2 -> sortBy = SortBy.NAME
                     }
 
                     checkId = radioGroupSortOrder.checkedRadioButtonId
                     radioButton = radioGroupSortOrder.findViewById(checkId)
 
                     when (radioGroupSortOrder.indexOfChild(radioButton)){
-                        0->sortOrder=SortOrder.ASC
-                        1->sortOrder=SortOrder.DESC
+                        0 -> sortOrder = SortOrder.ASC
+                        1 -> sortOrder = SortOrder.DESC
                     }
                 }
                 .show()
