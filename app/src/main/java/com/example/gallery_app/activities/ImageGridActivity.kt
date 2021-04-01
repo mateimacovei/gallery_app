@@ -1,6 +1,7 @@
 package com.example.gallery_app.activities
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
@@ -30,7 +31,6 @@ import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhoto
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
-import kotlin.math.log
 
 
 const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
@@ -45,13 +45,57 @@ class ImageGridActivity : AppCompatActivity(),
     lateinit var imageGridAdapter: ImageGridAdapter
     lateinit var album: MyPhotoAlbum
 
-    var sortBy: SortBy = SortBy.DATE_MODIFIED
-    var sortOrder: SortOrder = SortOrder.DESC
+    lateinit var sortBy: SortBy
+    lateinit var sortOrder: SortOrder
+
+    /**
+     * updates the sort preferences to the values currently set
+     */
+    private fun updateSortOrderPreferencesFile(){
+        val pref = applicationContext.getSharedPreferences("MyPref", MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = pref.edit()
+        when(sortBy){
+            SortBy.DATE_MODIFIED->editor.putString("sortBy", "DATE_MODIFIED")
+            SortBy.NAME->editor.putString("sortBy", "NAME")
+        }
+        when(sortOrder){
+            SortOrder.DESC->editor.putString("sortOrder", "DESC")
+            SortOrder.ASC->editor.putString("sortOrder", "ASC")
+        }
+        editor.apply()
+    }
+
+    private fun loadSortOrder()
+    {
+        val pref = applicationContext.getSharedPreferences("MyPref", MODE_PRIVATE)
+        when (pref.getString("sortOrder", "null")){
+            "DESC" -> sortOrder=SortOrder.DESC
+            "ASC" -> sortOrder=SortOrder.ASC
+            else -> {
+                sortOrder=SortOrder.DESC
+                val editor: SharedPreferences.Editor = pref.edit()
+                editor.putString("sortOrder", "DESC")
+                editor.apply()
+            }
+        }
+        when (pref.getString("sortBy", "null")){
+            "NAME" -> sortBy= SortBy.NAME
+            "DATE_MODIFIED" -> sortBy= SortBy.DATE_MODIFIED
+            else -> {
+                sortBy= SortBy.DATE_MODIFIED
+                val editor: SharedPreferences.Editor = pref.edit()
+                editor.putString("sortBy", "DATE_MODIFIED")
+                editor.apply()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_grid)
         setSupportActionBar(image_grid_toolbar)
+
+        loadSortOrder()
 
         val sglm = StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
         recycleViewerForImages.layoutManager = sglm
@@ -148,42 +192,44 @@ class ImageGridActivity : AppCompatActivity(),
 
     private fun loadPicturesFromAlbum() {
         Log.i("Activity", "loadPicturesFromAlbum entered")
-        selected = 0
-        for (picture in album.photos)
-            if (picture.selected)
-                selected++
+        val result = getNewPhotoArrayForAlbum(this)
+        if(result.second.size==0){
+            //TO DO elimina albumul din album grid
+            finish()
+        }
+        album.photos.clear()
+        album.photos.addAll(result.second)
+
+        selected = album.getNrSelected()
         if (selected > 0)
             enableSelectionMode()
-        else {
+        else
             disableSelectionMode()
-        }
+
 
         imageGridAdapter = ImageGridAdapter(this, album.photos)
-        //I MUST NOT REPLACE album.photos with a new arrayList. Instead, clear and add in the old one
+//        I MUST NOT REPLACE album.photos with a new arrayList. Instead, clear and add in the old one
         imageGridAdapter.setClickListener(this)
         recycleViewerForImages.adapter = imageGridAdapter
     }
 
-    private fun reloadPicturesFromAlbum(force: Boolean=false) {
+    private fun reloadPicturesFromAlbum(force: Boolean = false) {
         val result = getNewPhotoArrayForAlbum(this)
-        Log.i("Images","reloadPicturesFromAlbum. update=${result.first} | force=$force")
+        Log.i("Images", "reloadPicturesFromAlbum. update=${result.first} | force=$force")
         if (result.first or force) {
-
-            //to do daca e vid
+            if(result.second.size==0){
+                //TO DO elimina albumul din album grid
+                finish()
+            }
             album.photos.clear()
             album.photos.addAll(result.second)
             imageGridAdapter.notifyDataSetChanged()
 
-            selected = 0
-            for (picture in album.photos)
-                if (picture.selected)
-                    selected++
+            selected = album.getNrSelected()
             if (selected > 0)
                 enableSelectionMode()
-            else {
+            else
                 disableSelectionMode()
-            }
-
         }
     }
 
@@ -378,6 +424,7 @@ class ImageGridActivity : AppCompatActivity(),
                         1 -> sortOrder = SortOrder.DESC
                     }
                     reloadPicturesFromAlbum(force = true)
+                    updateSortOrderPreferencesFile()
                 }
                 .show()
     }

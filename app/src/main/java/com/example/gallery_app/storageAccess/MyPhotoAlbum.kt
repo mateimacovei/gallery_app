@@ -8,4 +8,12 @@ class MyPhotoAlbum(val albumFullPath: String, var photos: ArrayList<MyPhoto>) {
         val splitPath = albumFullPath.split('/')
         albumName = splitPath.last()
     }
+
+    fun getNrSelected(): Int{
+        var selectedNr = 0
+        for (picture in photos)
+            if (picture.selected)
+                selectedNr++
+        return selectedNr
+    }
 }
