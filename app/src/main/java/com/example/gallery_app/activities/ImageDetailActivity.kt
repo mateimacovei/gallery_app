@@ -55,7 +55,6 @@ class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListen
                 }
             }
         }
-        //"%.2f".format(SIZE?.toDouble()?.div(1024))
 
         Log.i("Data", "width: ${photo.WIDTH}, height: ${photo.HEIGHT}")
         if (photo.HEIGHT == null) {
@@ -70,7 +69,7 @@ class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListen
         //FUN FACT: if I don't set a separate onClickListener, it will never reach fling
         val gestureDetector: GestureDetector = GestureDetector(this, this)
         detailsConstraintLayout.setOnTouchListener(View.OnTouchListener(fun(
-                view: View,
+                _: View,
                 event: MotionEvent
         ): Boolean {
             Log.i("Gestures", "OnTouchListener called")
@@ -136,6 +135,4 @@ class ImageDetailActivity : AppCompatActivity(), GestureDetector.OnGestureListen
         val clip: ClipData = ClipData.newPlainText(photo.name,photo.name)
         clipboard.setPrimaryClip(clip)
     }
-
-
 }

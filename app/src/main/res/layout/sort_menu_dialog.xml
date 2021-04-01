@@ -16,12 +16,6 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <RadioButton
-            android:id="@+id/dateCreatedRadioButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Date created" />
-
-        <RadioButton
             android:id="@+id/dateModifiedRadioButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

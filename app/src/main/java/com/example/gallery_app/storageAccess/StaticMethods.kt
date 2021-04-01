@@ -36,7 +36,7 @@ class StaticMethods {
             var changed = false
 
 
-            val imageCursor: Cursor? = getPathFilterImageCursor(imageGridActivity, imageGridActivity.album.albumFullPath, getSortOrderString(SortBy.DATE_MODIFIED, SortOrder.DESC))
+            val imageCursor: Cursor? = getPathFilterImageCursor(imageGridActivity, imageGridActivity.album.albumFullPath, getSortOrderString(imageGridActivity.sortBy, imageGridActivity.sortOrder))
             if (imageCursor == null) {
                 Log.w("Files", "failed to reload album: cursor was null")
                 return Pair(true, ArrayList())
@@ -45,9 +45,11 @@ class StaticMethods {
             val picturesMap: MutableMap<String, MyPhoto> = getPhotosFromCursor(imageCursor)
 
             for (photo in oldPhotos)
-                if (photo.selected and picturesMap.containsKey(photo.DATA))
-                    picturesMap[photo.DATA]?.selected = true
-                else changed = true
+                if (picturesMap.containsKey(photo.DATA)) {
+                    if (photo.selected)
+                        picturesMap[photo.DATA]?.selected = true
+                } else
+                    changed = true
 
             for (photoFullPath in picturesMap.keys) {
                 val candidate = picturesMap[photoFullPath]
@@ -114,7 +116,6 @@ class StaticMethods {
         private fun getSortOrderString(sortBy: SortBy, sortOrder: SortOrder): String {
             var res: String = when (sortBy) {
                 SortBy.NAME -> MediaStore.Images.Media.DISPLAY_NAME
-                SortBy.DATE_CREATED -> MediaStore.Images.Media.DATE_ADDED
                 SortBy.DATE_MODIFIED -> MediaStore.Images.Media.DATE_MODIFIED
             }
 
@@ -141,7 +142,7 @@ class StaticMethods {
          * return a cursor over the images containing the given path
          * it will return pictures in a folder AND IN ITS SUB-FOLDERS
          */
-        fun getPathFilterImageCursor(activity: Activity, path: String, sortOrder: String): Cursor? {
+        private fun getPathFilterImageCursor(activity: Activity, path: String, sortOrder: String): Cursor? {
             return activity.contentResolver.query(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     projection,

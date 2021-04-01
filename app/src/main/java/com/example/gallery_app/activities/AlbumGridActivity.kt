@@ -41,7 +41,7 @@ class AlbumGridActivity : AppCompatActivity(),
             recycleViewerForAlbums.adapter = aga
         }
         else{
-            Log.w("Files","NO ALBUMS RECEIVED")
+            Log.w("Files", "NO ALBUMS RECEIVED")
         }
 
         this.onConfigurationChanged(this.resources.configuration)
@@ -49,9 +49,13 @@ class AlbumGridActivity : AppCompatActivity(),
     }
 
     override fun onBackPressed() {
-        if (!this.selectionMode)
-            super.onBackPressed()
-        else {
+        if (!this.selectionMode) {
+//            super.onBackPressed()
+            val data = Intent()
+//            data.putExtra("myData1", "Data 1 value")
+            setResult(RESULT_OK, data)
+            finish()
+        } else {
             for (holder in holders)
                 holder.disableSelectionMode()
             this.selectionMode = false
@@ -63,13 +67,13 @@ class AlbumGridActivity : AppCompatActivity(),
 
         when (newConfig.orientation) {
             Configuration.ORIENTATION_PORTRAIT -> recycleViewerForAlbums.layoutManager =
-                StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
+                    StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
             Configuration.ORIENTATION_LANDSCAPE -> recycleViewerForAlbums.layoutManager =
-                StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
+                    StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
             else -> { // Note the block
                 Log.w(
-                    "Orientation",
-                    "Orientation in AlbumGridActivity was undefined at configuration change"
+                        "Orientation",
+                        "Orientation in AlbumGridActivity was undefined at configuration change"
                 )
             }
         }
@@ -79,16 +83,16 @@ class AlbumGridActivity : AppCompatActivity(),
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onItemClick(
-        view: View?,
-        position: Int,
-        colorViewHolder: AlbumGridAdapter.ColorViewHolder
+            view: View?,
+            position: Int,
+            colorViewHolder: AlbumGridAdapter.ColorViewHolder,
     ) {
         if (selectionMode) {
             colorViewHolder.reverseSelection()
         } else {
             val album = colorViewHolder.album
             val intentImageGrid = Intent(this, ImageGridActivity::class.java)
-            Box.Add(intentImageGrid, IMAGE_GRID_MESSAGE,album)
+            Box.Add(intentImageGrid, IMAGE_GRID_MESSAGE, album)
             this.startActivity(intentImageGrid)
         }
     }
@@ -97,9 +101,9 @@ class AlbumGridActivity : AppCompatActivity(),
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onLongItemClick(
-        view: View?,
-        position: Int,
-        colorViewHolder: AlbumGridAdapter.ColorViewHolder
+            view: View?,
+            position: Int,
+            colorViewHolder: AlbumGridAdapter.ColorViewHolder,
     ) {
         if (selectionMode) {
             colorViewHolder.reverseSelection()

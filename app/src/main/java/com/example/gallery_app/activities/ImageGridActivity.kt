@@ -30,6 +30,7 @@ import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhoto
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
+import kotlin.math.log
 
 
 const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
@@ -76,12 +77,16 @@ class ImageGridActivity : AppCompatActivity(),
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.image_grid_layout_menu, menu)
-
-        for (i in 0 until menu!!.size()) {
-            val item = menu.getItem(i)
-            val spanString = SpannableString(menu.getItem(i).title.toString())
-            spanString.setSpan(ForegroundColorSpan(Color.WHITE), 0, spanString.length, 0) //fix the color to white
-            item.title = spanString
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_YES ->
+                for (i in 0 until menu!!.size()) {
+                    val item = menu.getItem(i)
+                    val spanString = SpannableString(menu.getItem(i).title.toString())
+                    spanString.setSpan(ForegroundColorSpan(Color.WHITE), 0, spanString.length, 0) //fix the color to white
+                    item.title = spanString
+                }
+            Configuration.UI_MODE_NIGHT_NO -> {
+            }
         }
 
         return true
@@ -159,9 +164,12 @@ class ImageGridActivity : AppCompatActivity(),
         recycleViewerForImages.adapter = imageGridAdapter
     }
 
-    private fun reloadPicturesFromAlbum() {
+    private fun reloadPicturesFromAlbum(force: Boolean=false) {
         val result = getNewPhotoArrayForAlbum(this)
-        if (result.first) {
+        Log.i("Images","reloadPicturesFromAlbum. update=${result.first} | force=$force")
+        if (result.first or force) {
+
+            //to do daca e vid
             album.photos.clear()
             album.photos.addAll(result.second)
             imageGridAdapter.notifyDataSetChanged()
@@ -330,14 +338,13 @@ class ImageGridActivity : AppCompatActivity(),
         val radioGroupSortOrder: RadioGroup = customAlertDialogView.findViewById(R.id.RadioGroupSortOrder)
 
         val nameRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.nameRadioButton)
-        val dateCreatedRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.dateCreatedRadioButton)
         val dateModifiedRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.dateModifiedRadioButton)
+
         val descendingRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.descendingRadioButton)
         val ascendingRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.ascendingRadioButton)
 
         when (sortBy) {
             SortBy.NAME -> nameRadioButton.isChecked = true
-            SortBy.DATE_CREATED -> dateCreatedRadioButton.isChecked = true
             SortBy.DATE_MODIFIED -> dateModifiedRadioButton.isChecked = true
         }
 
@@ -359,9 +366,8 @@ class ImageGridActivity : AppCompatActivity(),
                     var radioButton: View = radioGroupSortBy.findViewById(checkId)
 
                     when (radioGroupSortBy.indexOfChild(radioButton)){
-                        0 -> sortBy = SortBy.DATE_CREATED
-                        1 -> sortBy = SortBy.DATE_MODIFIED
-                        2 -> sortBy = SortBy.NAME
+                        0 -> sortBy = SortBy.DATE_MODIFIED
+                        1 -> sortBy = SortBy.NAME
                     }
 
                     checkId = radioGroupSortOrder.checkedRadioButtonId
@@ -371,6 +377,7 @@ class ImageGridActivity : AppCompatActivity(),
                         0 -> sortOrder = SortOrder.ASC
                         1 -> sortOrder = SortOrder.DESC
                     }
+                    reloadPicturesFromAlbum(force = true)
                 }
                 .show()
     }
