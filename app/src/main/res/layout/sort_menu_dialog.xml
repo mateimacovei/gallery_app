@@ -16,13 +16,13 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <RadioButton
-            android:id="@+id/dateModifiedRadioButton"
+            android:id="@+id/radioButtonGridSize3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Date modified" />
 
         <RadioButton
-            android:id="@+id/nameRadioButton"
+            android:id="@+id/radioButtonGridSize4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Name" />
@@ -57,6 +57,7 @@
         android:layout_height="wrap_content"
         android:text="Order"
         android:textSize="18sp"
+        android:paddingLeft="@dimen/fab_margin"
         app:layout_constraintBottom_toTopOf="@+id/RadioGroupSortOrder"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/radioGroupSortBy" />

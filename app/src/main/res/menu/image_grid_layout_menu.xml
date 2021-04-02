@@ -24,8 +24,8 @@
             android:onClick="sortMenuButtonClicked"
             android:title="Sort" />
         <item
-            android:onClick="gridMenuButtonClicked"
-            android:title="Grid" />
+            android:onClick="gridSizeMenuButtonClicked"
+            android:title="Grid size" />
     </group>
 <!--    <item-->
 <!--        android:id="@+id/image_grid_menu_search"-->

@@ -23,14 +23,12 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.gallery_app.*
 import com.example.gallery_app.adapter.ImageGridAdapter
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
-import com.example.gallery_app.storageAccess.Box
-import com.example.gallery_app.storageAccess.MyPhotoAlbum
-import com.example.gallery_app.storageAccess.SortBy
-import com.example.gallery_app.storageAccess.SortOrder
+import com.example.gallery_app.storageAccess.*
 import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhotoArrayForAlbum
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
+import kotlin.properties.Delegates
 
 
 const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
@@ -47,44 +45,62 @@ class ImageGridActivity : AppCompatActivity(),
 
     lateinit var sortBy: SortBy
     lateinit var sortOrder: SortOrder
+    lateinit var gridSize: GridSize
 
     /**
      * updates the sort preferences to the values currently set
      */
-    private fun updateSortOrderPreferencesFile(){
+    private fun updatePreferencesFile() {
         val pref = applicationContext.getSharedPreferences("MyPref", MODE_PRIVATE)
         val editor: SharedPreferences.Editor = pref.edit()
-        when(sortBy){
-            SortBy.DATE_MODIFIED->editor.putString("sortBy", "DATE_MODIFIED")
-            SortBy.NAME->editor.putString("sortBy", "NAME")
+        when (sortBy) {
+            SortBy.DATE_MODIFIED -> editor.putString("sortBy", "DATE_MODIFIED")
+            SortBy.NAME -> editor.putString("sortBy", "NAME")
         }
-        when(sortOrder){
-            SortOrder.DESC->editor.putString("sortOrder", "DESC")
-            SortOrder.ASC->editor.putString("sortOrder", "ASC")
+        when (sortOrder) {
+            SortOrder.DESC -> editor.putString("sortOrder", "DESC")
+            SortOrder.ASC -> editor.putString("sortOrder", "ASC")
+        }
+        when (gridSize) {
+            GridSize.S1 -> editor.putString("gridSize", "S1")
+            GridSize.S2 -> editor.putString("gridSize", "S2")
+            GridSize.S3 -> editor.putString("gridSize", "S3")
+            GridSize.S4 -> editor.putString("gridSize", "S4")
         }
         editor.apply()
     }
 
-    private fun loadSortOrder()
-    {
+    private fun loadPreferences() {
         val pref = applicationContext.getSharedPreferences("MyPref", MODE_PRIVATE)
-        when (pref.getString("sortOrder", "null")){
-            "DESC" -> sortOrder=SortOrder.DESC
-            "ASC" -> sortOrder=SortOrder.ASC
+        when (pref.getString("sortOrder", "null")) {
+            "DESC" -> sortOrder = SortOrder.DESC
+            "ASC" -> sortOrder = SortOrder.ASC
             else -> {
-                sortOrder=SortOrder.DESC
+                sortOrder = SortOrder.DESC
                 val editor: SharedPreferences.Editor = pref.edit()
                 editor.putString("sortOrder", "DESC")
                 editor.apply()
             }
         }
-        when (pref.getString("sortBy", "null")){
-            "NAME" -> sortBy= SortBy.NAME
-            "DATE_MODIFIED" -> sortBy= SortBy.DATE_MODIFIED
+        when (pref.getString("sortBy", "null")) {
+            "NAME" -> sortBy = SortBy.NAME
+            "DATE_MODIFIED" -> sortBy = SortBy.DATE_MODIFIED
             else -> {
-                sortBy= SortBy.DATE_MODIFIED
+                sortBy = SortBy.DATE_MODIFIED
                 val editor: SharedPreferences.Editor = pref.edit()
                 editor.putString("sortBy", "DATE_MODIFIED")
+                editor.apply()
+            }
+        }
+        when (pref.getString("gridSize", "null")) {
+            "S1" -> gridSize = GridSize.S1
+            "S2" -> gridSize = GridSize.S2
+            "S3" -> gridSize = GridSize.S3
+            "S4" -> gridSize = GridSize.S4
+            else -> {
+                gridSize = GridSize.S1
+                val editor: SharedPreferences.Editor = pref.edit()
+                editor.putString("gridSize", "S1")
                 editor.apply()
             }
         }
@@ -95,10 +111,9 @@ class ImageGridActivity : AppCompatActivity(),
         setContentView(R.layout.activity_image_grid)
         setSupportActionBar(image_grid_toolbar)
 
-        loadSortOrder()
+        loadPreferences()
 
-        val sglm = StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
-        recycleViewerForImages.layoutManager = sglm
+        this.onConfigurationChanged(this.resources.configuration)
         val onFlingListener = MyOnFlingListener()
         recycleViewerForImages.onFlingListener = onFlingListener
 
@@ -113,7 +128,7 @@ class ImageGridActivity : AppCompatActivity(),
         else
             titleTextView.text = (album.albumName.subSequence(0, 19).toString() + "...")
 
-        this.onConfigurationChanged(this.resources.configuration)
+
         loadPicturesFromAlbum()
 
         Log.i("Activity", "onCreate exit")
@@ -193,7 +208,7 @@ class ImageGridActivity : AppCompatActivity(),
     private fun loadPicturesFromAlbum() {
         Log.i("Activity", "loadPicturesFromAlbum entered")
         val result = getNewPhotoArrayForAlbum(this)
-        if(result.second.size==0){
+        if (result.second.size == 0) {
             //TO DO elimina albumul din album grid
             finish()
         }
@@ -217,7 +232,7 @@ class ImageGridActivity : AppCompatActivity(),
         val result = getNewPhotoArrayForAlbum(this)
         Log.i("Images", "reloadPicturesFromAlbum. update=${result.first} | force=$force")
         if (result.first or force) {
-            if(result.second.size==0){
+            if (result.second.size == 0) {
                 //TO DO elimina albumul din album grid
                 finish()
             }
@@ -263,33 +278,18 @@ class ImageGridActivity : AppCompatActivity(),
      */
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-
-//        val grid: StaggeredGridLayoutManager = recycleViewerForImages.layoutManager as StaggeredGridLayoutManager
-//
-//        val firstVisibleItemPositions = IntArray(100)
-//        val aux: IntArray = grid.findFirstVisibleItemPositions(firstVisibleItemPositions)
-//
-//        Log.i("GRID", "offset: $aux, | into: $firstVisibleItemPositions")
-
-//        val v: View? = recycleViewerForImages.layoutManager?.getChildAt(1)
-//        var offset=0
-//        if(v!=null)
-//            offset= v.top
-
-//        Log.i("GRID","offset: $offset")
-
+        var nrColumns by Delegates.notNull<Int>()
         when (newConfig.orientation) {
-            ORIENTATION_PORTRAIT -> recycleViewerForImages.layoutManager =
-                    StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
-            ORIENTATION_LANDSCAPE -> recycleViewerForImages.layoutManager =
-                    StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
-            else -> { // Note the block
-                Log.w(
-                        "Orientation",
-                        "Orientation in ImageGridKotlinActivity was undefined at configuration change"
-                )
-            }
+            ORIENTATION_PORTRAIT ->
+                nrColumns = getPortraitGridColumns(gridSize)
+            ORIENTATION_LANDSCAPE ->
+                nrColumns = getLandscapeGridColumns(gridSize)
+            else -> Log.w(
+                    "Orientation",
+                    "Orientation in ImageGridKotlinActivity was undefined at configuration change"
+            )
         }
+        recycleViewerForImages.layoutManager = StaggeredGridLayoutManager(nrColumns, StaggeredGridLayoutManager.VERTICAL)
     }
 
     private fun startFullscreenActivity(imageColorViewHolder: ImageGridAdapter.ImageColorViewHolder) {
@@ -383,8 +383,8 @@ class ImageGridActivity : AppCompatActivity(),
         val radioGroupSortBy: RadioGroup = customAlertDialogView.findViewById(R.id.radioGroupSortBy)
         val radioGroupSortOrder: RadioGroup = customAlertDialogView.findViewById(R.id.RadioGroupSortOrder)
 
-        val nameRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.nameRadioButton)
-        val dateModifiedRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.dateModifiedRadioButton)
+        val nameRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.radioButtonGridSize4)
+        val dateModifiedRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.radioButtonGridSize3)
 
         val descendingRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.descendingRadioButton)
         val ascendingRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.ascendingRadioButton)
@@ -394,8 +394,7 @@ class ImageGridActivity : AppCompatActivity(),
             SortBy.DATE_MODIFIED -> dateModifiedRadioButton.isChecked = true
         }
 
-        when (sortOrder)
-        {
+        when (sortOrder) {
             SortOrder.DESC -> descendingRadioButton.isChecked = true
             SortOrder.ASC -> ascendingRadioButton.isChecked = true
         }
@@ -411,7 +410,10 @@ class ImageGridActivity : AppCompatActivity(),
                     var checkId = radioGroupSortBy.checkedRadioButtonId
                     var radioButton: View = radioGroupSortBy.findViewById(checkId)
 
-                    when (radioGroupSortBy.indexOfChild(radioButton)){
+                    val oldSortBy = sortBy
+                    val oldSortOrder = sortOrder
+
+                    when (radioGroupSortBy.indexOfChild(radioButton)) {
                         0 -> sortBy = SortBy.DATE_MODIFIED
                         1 -> sortBy = SortBy.NAME
                     }
@@ -419,18 +421,71 @@ class ImageGridActivity : AppCompatActivity(),
                     checkId = radioGroupSortOrder.checkedRadioButtonId
                     radioButton = radioGroupSortOrder.findViewById(checkId)
 
-                    when (radioGroupSortOrder.indexOfChild(radioButton)){
+                    when (radioGroupSortOrder.indexOfChild(radioButton)) {
                         0 -> sortOrder = SortOrder.ASC
                         1 -> sortOrder = SortOrder.DESC
                     }
-                    reloadPicturesFromAlbum(force = true)
-                    updateSortOrderPreferencesFile()
+
+                    if (oldSortBy != sortBy || oldSortOrder != sortOrder) {
+                        reloadPicturesFromAlbum(force = true)
+                        updatePreferencesFile()
+                    }
                 }
                 .show()
     }
 
-    fun gridMenuButtonClicked(item: MenuItem) {
-        Log.i("Buttons", "clicked gridMenuButtonClicked")
+    fun gridSizeMenuButtonClicked(item: MenuItem) {
+        val customAlertDialogView = LayoutInflater.from(this)
+                .inflate(R.layout.grid_size_dialog, null, false)
+
+        val radioGroupGridSize: RadioGroup = customAlertDialogView.findViewById(R.id.radioGroupGridSize)
+        val radioButton1: RadioButton = customAlertDialogView.findViewById(R.id.radioButtonGridSize1)
+        val radioButton2: RadioButton = customAlertDialogView.findViewById(R.id.radioButtonGridSize2)
+        val radioButton3: RadioButton = customAlertDialogView.findViewById(R.id.radioButtonGridSize3)
+        val radioButton4: RadioButton = customAlertDialogView.findViewById(R.id.radioButtonGridSize4)
+
+        when (gridSize) {
+            GridSize.S1 -> radioButton1.isChecked = true
+            GridSize.S2 -> radioButton2.isChecked = true
+            GridSize.S3 -> radioButton3.isChecked = true
+            GridSize.S4 -> radioButton4.isChecked = true
+        }
+
+        MaterialAlertDialogBuilder(this)
+                .setView(customAlertDialogView)
+                .setTitle("Resize grid")
+                .setNegativeButton("Cancel") { dialog, which ->
+                    Log.i("Dialog", "cancel clicked")
+                }
+                .setPositiveButton("Done") { dialog, which ->
+                    Log.i("Dialog", "done clicked")
+                    val checkId = radioGroupGridSize.checkedRadioButtonId
+                    val radioButton: View = radioGroupGridSize.findViewById(checkId)
+
+                    val oldGridSize = gridSize
+
+                    when (radioGroupGridSize.indexOfChild(radioButton)) {
+                        0 -> gridSize = GridSize.S1
+                        1 -> gridSize = GridSize.S2
+                        2 -> gridSize = GridSize.S3
+                        3 -> gridSize = GridSize.S4
+                    }
+
+                    if (oldGridSize != gridSize) {
+                        this.onConfigurationChanged(this.resources.configuration)
+                        updatePreferencesFile()
+
+                        if (shouldShowFullscreenIcon(oldGridSize) != shouldShowFullscreenIcon(gridSize) && selectionMode) {
+                            when (shouldShowFullscreenIcon(gridSize)) {
+                                true -> for (holder in holderImages)
+                                    holder.imageButtonFullscreen.visibility = View.VISIBLE
+                                false -> for (holder in holderImages)
+                                    holder.imageButtonFullscreen.visibility = View.GONE
+                            }
+                        }
+                    }
+                }
+                .show()
     }
 
     fun goodImageGridSearchClicked(v: View) {

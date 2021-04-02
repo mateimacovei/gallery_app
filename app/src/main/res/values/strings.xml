@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">gallery_app</string>
-    <string name="roll_dice">Roll dice</string>
+    <string name="app_name">Gallery</string>
     <string name="todo">TODO</string>
     <string name="dice_roll">__dice_roll</string>
     <string name="result">Result:</string>

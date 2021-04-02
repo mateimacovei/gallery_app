@@ -15,8 +15,8 @@ public class Box {
 
     //
     private static String _Intent_Identifier = "_Intent_Identifier";
-    private static HashMap<Integer, Vector<Integer>> DeleteList = new HashMap<Integer, Vector<Integer>>();
-    private static HashMap<Integer, HashMap<String, Object>> ObjectList = new HashMap<Integer, HashMap<String, Object>>();
+    private static final HashMap<Integer, Vector<Integer>> DeleteList = new HashMap<Integer, Vector<Integer>>();
+    private static final HashMap<Integer, HashMap<String, Object>> ObjectList = new HashMap<Integer, HashMap<String, Object>>();
 
     public static int GetIntent_Identifier(Intent I) {
         int Intent_Identifier = I.getIntExtra(_Intent_Identifier, 0);
@@ -55,7 +55,7 @@ public class Box {
             public void run() {
                 try {
                     Thread.sleep(60 * 1000);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
                 synchronized (DeleteList) {
                     if (DeleteList.containsKey(Intent_Identifier))

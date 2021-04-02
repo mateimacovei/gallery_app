@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="left">
+
+    <RadioGroup
+        android:id="@+id/radioGroupGridSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/radioButtonGridSize1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="3 Portrait, 5 Landscape" />
+
+        <RadioButton
+            android:id="@+id/radioButtonGridSize2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="4 Portrait, 7 Landscape" />
+
+        <RadioButton
+            android:id="@+id/radioButtonGridSize3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="6 Portrait, 11 Landscape" />
+
+        <RadioButton
+            android:id="@+id/radioButtonGridSize4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="8 Portrait, 14 Landscape" />
+    </RadioGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

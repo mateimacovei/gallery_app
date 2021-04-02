@@ -23,6 +23,7 @@ import com.example.gallery_app.activities.ImageGridActivity
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
 import com.example.gallery_app.storageAccess.MyMediaObject
 import com.example.gallery_app.storageAccess.MyPhoto
+import com.example.gallery_app.storageAccess.shouldShowFullscreenIcon
 import kotlinx.android.synthetic.main.item_image_in_grid.view.*
 import java.util.*
 
@@ -87,6 +88,8 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
 
         if (context.selectionMode) {
             holderImage.checkBox.isChecked = holderImage.myMediaObject.selected
+            if(!shouldShowFullscreenIcon(context.gridSize))
+                holderImage.imageButtonFullscreen.visibility = View.GONE
         } else {
             holderImage.checkBox.visibility = View.GONE
             holderImage.imageButtonFullscreen.visibility = View.GONE
@@ -190,7 +193,8 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
          */
         fun enableSelectionMode() {
             checkBox.visibility = View.VISIBLE
-            imageButtonFullscreen.visibility = View.VISIBLE
+            if (shouldShowFullscreenIcon(context.gridSize))
+                imageButtonFullscreen.visibility = View.VISIBLE
         }
 
         /**
