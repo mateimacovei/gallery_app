@@ -40,12 +40,13 @@ class ImageGridActivity : AppCompatActivity(),
     private var selected = 0
 
     val holderImages: ArrayList<ImageGridAdapter.ImageColorViewHolder> = ArrayList()
-    lateinit var imageGridAdapter: ImageGridAdapter
+    private lateinit var imageGridAdapter: ImageGridAdapter
     lateinit var album: MyPhotoAlbum
 
     lateinit var sortBy: SortBy
     lateinit var sortOrder: SortOrder
     lateinit var gridSize: GridSize
+    var nrLoaded = 0
 
     /**
      * updates the sort preferences to the values currently set
@@ -128,8 +129,7 @@ class ImageGridActivity : AppCompatActivity(),
         else
             titleTextView.text = (album.albumName.subSequence(0, 19).toString() + "...")
 
-
-        loadPicturesFromAlbum()
+        loadPicturesFromAlbum(onCreate = true)
 
         Log.i("Activity", "onCreate exit")
     }
@@ -147,7 +147,6 @@ class ImageGridActivity : AppCompatActivity(),
             Configuration.UI_MODE_NIGHT_NO -> {
             }
         }
-
         return true
     }
 
@@ -179,8 +178,7 @@ class ImageGridActivity : AppCompatActivity(),
         imageGridNavigationImageButton.visibility = View.GONE
         subtitleTextView.visibility = View.GONE
         toolbarCheckBox.visibility = View.VISIBLE
-        if (selected == album.mediaObjects.size)
-            toolbarCheckBox.isChecked = true
+        toolbarCheckBox.isChecked = (selected == album.mediaObjects.size)
         toolbarCheckBox.text = selected.toString()
 
         for (holder in holderImages)
@@ -202,49 +200,56 @@ class ImageGridActivity : AppCompatActivity(),
         for (photo in album.mediaObjects)
             photo.selected = false
         selected = 0
-        subtitleTextView.text = (album.mediaObjects.size.toString() + " images")
     }
 
-    private fun loadPicturesFromAlbum() {
-        Log.i("Activity", "loadPicturesFromAlbum entered")
+    private fun updateSubTitle() {
+        var newSubtitle = ""
+        if (album.nrPhotos != 0)
+            newSubtitle += if (album.nrPhotos == 1)
+                " 1 image "
+            else
+                album.nrPhotos.toString() + " images "
+        if (album.nrVideos != 0)
+            newSubtitle += if (album.nrVideos == 1)
+                "1 video"
+            else
+                album.nrVideos.toString() + " videos"
+        subtitleTextView.text = newSubtitle
+    }
+
+    private fun loadPicturesFromAlbum(force: Boolean = false, onCreate: Boolean = false) {
+        Log.i("Activity", "loadPicturesFromAlbum entered: nrLoaded: $nrLoaded, force = $force, onCreate = $onCreate")
+        if (nrLoaded < 3) {
+            nrLoaded++
+            if (nrLoaded == 2)
+                return
+        }
         val result = getNewPhotoArrayForAlbum(this)
-        if (result.second.size == 0) {
+        Log.i("Activity", "loadPicturesFromAlbum got result; shouldUpdate = ${result.first}")
+        if (result.second.isEmpty()) {
             //TO DO elimina albumul din album grid
             finish()
         }
-        album.mediaObjects.clear()
-        album.mediaObjects.addAll(result.second)
-
-        selected = album.getNrSelected()
-        if (selected > 0)
-            enableSelectionMode()
-        else
-            disableSelectionMode()
-
-
-        imageGridAdapter = ImageGridAdapter(this, album.mediaObjects)
-//        I MUST NOT REPLACE album.photos with a new arrayList. Instead, clear and add in the old one
-        imageGridAdapter.setClickListener(this)
-        recycleViewerForImages.adapter = imageGridAdapter
-    }
-
-    private fun reloadPicturesFromAlbum(force: Boolean = false) {
-        val result = getNewPhotoArrayForAlbum(this)
-        Log.i("Images", "reloadPicturesFromAlbum. update=${result.first} | force=$force")
-        if (result.first or force) {
-            if (result.second.size == 0) {
-                //TO DO elimina albumul din album grid
-                finish()
-            }
+        if (onCreate or force or result.first) {
             album.mediaObjects.clear()
             album.mediaObjects.addAll(result.second)
-            imageGridAdapter.notifyDataSetChanged()
+
+            if (!onCreate)
+                imageGridAdapter.notifyDataSetChanged()
 
             selected = album.getNrSelected()
             if (selected > 0)
                 enableSelectionMode()
             else
                 disableSelectionMode()
+            updateSubTitle()
+
+            if (onCreate) {
+                imageGridAdapter = ImageGridAdapter(this, album.mediaObjects)
+//        I MUST NOT REPLACE album.photos with a new arrayList. Instead, clear and add in the old one
+                imageGridAdapter.setClickListener(this)
+                recycleViewerForImages.adapter = imageGridAdapter
+            }
         }
     }
 
@@ -358,7 +363,7 @@ class ImageGridActivity : AppCompatActivity(),
     override fun onResume() {
         Log.i("Activity", "onResume entered")
         super.onResume()
-        reloadPicturesFromAlbum()
+        loadPicturesFromAlbum()
         Log.i("Activity", "onResume exit")
     }
 
@@ -402,10 +407,10 @@ class ImageGridActivity : AppCompatActivity(),
         MaterialAlertDialogBuilder(this)
                 .setView(customAlertDialogView)
                 .setTitle("Sort by")
-                .setNegativeButton("Cancel") { dialog, which ->
+                .setNegativeButton("Cancel") { _, _ ->
                     Log.i("Dialog", "cancel clicked")
                 }
-                .setPositiveButton("Done") { dialog, which ->
+                .setPositiveButton("Done") { _, _ ->
                     Log.i("Dialog", "done clicked")
                     var checkId = radioGroupSortBy.checkedRadioButtonId
                     var radioButton: View = radioGroupSortBy.findViewById(checkId)
@@ -427,7 +432,7 @@ class ImageGridActivity : AppCompatActivity(),
                     }
 
                     if (oldSortBy != sortBy || oldSortOrder != sortOrder) {
-                        reloadPicturesFromAlbum(force = true)
+                        loadPicturesFromAlbum(force = true)
                         updatePreferencesFile()
                     }
                 }
@@ -454,10 +459,10 @@ class ImageGridActivity : AppCompatActivity(),
         MaterialAlertDialogBuilder(this)
                 .setView(customAlertDialogView)
                 .setTitle("Resize grid")
-                .setNegativeButton("Cancel") { dialog, which ->
+                .setNegativeButton("Cancel") { _, _ ->
                     Log.i("Dialog", "cancel clicked")
                 }
-                .setPositiveButton("Done") { dialog, which ->
+                .setPositiveButton("Done") { _, _ ->
                     Log.i("Dialog", "done clicked")
                     val checkId = radioGroupGridSize.checkedRadioButtonId
                     val radioButton: View = radioGroupGridSize.findViewById(checkId)

@@ -37,7 +37,7 @@ class StaticMethods {
          * Second: list of pictures from the album, taking into account the sorting parameters
          * KEEPS the selection model
          */
-        fun getNewPhotoArrayForAlbum(imageGridActivity: ImageGridActivity): Pair<Boolean, ArrayList<MyMediaObject>> {
+        fun getNewPhotoArrayForAlbum(imageGridActivity: ImageGridActivity): Pair<Boolean, List<MyMediaObject>> {
             val oldMediaObjects = imageGridActivity.album.mediaObjects
             var changed = false
 
@@ -49,9 +49,12 @@ class StaticMethods {
 //            }
 //            val picturesMap: MutableMap<String, MyMediaObject> = getPhotosFromCursor(imageCursor)
 
-            val picturesMap= getPictures(imageGridActivity, path = imageGridActivity.album.albumFullPath, sortOrder = getSortOrderString(imageGridActivity.sortBy, imageGridActivity.sortOrder))
-            picturesMap.putAll(getVideos(imageGridActivity, path = imageGridActivity.album.albumFullPath, sortOrder = getSortOrderString(imageGridActivity.sortBy, imageGridActivity.sortOrder)))
+            val picturesMap = getPictures(imageGridActivity, albumPath = imageGridActivity.album.albumFullPath, sortOrder = getSortOrderString(imageGridActivity.sortBy, imageGridActivity.sortOrder))
+            val videosMap = getVideos(imageGridActivity, albumPath = imageGridActivity.album.albumFullPath, sortOrder = getSortOrderString(imageGridActivity.sortBy, imageGridActivity.sortOrder))
 
+            imageGridActivity.album.nrPhotos = picturesMap.size
+            imageGridActivity.album.nrVideos = videosMap.size
+            picturesMap.putAll(videosMap)
 
             for (mediaObject in oldMediaObjects)
                 if (picturesMap.containsKey(mediaObject.DATA)) {
@@ -60,7 +63,7 @@ class StaticMethods {
                 } else
                     changed = true
 
-            val newPhotos = fitAlbumPath(picturesMap,imageGridActivity.album.albumFullPath)
+            val newPhotos: List<MyMediaObject> = picturesMap.map { x->x.value }
             //TO DO now videos are always at the end. SORT IT
 
             if (oldMediaObjects.size != newPhotos.size)
@@ -69,40 +72,52 @@ class StaticMethods {
             return Pair(changed, newPhotos)
         }
 
-        fun fitAlbumPath(mediaObjectsMap: MutableMap<String, MyMediaObject>, albumFullPath: String): ArrayList<MyMediaObject> {
-            val result = ArrayList<MyMediaObject>()
+        private fun fitAlbumPathMap(mediaObjectsMap: MutableMap<String, MyMediaObject>, albumFullPath: String): MutableMap<String, MyMediaObject> {
+            val result = mutableMapOf<String, MyMediaObject>()
             for (photoFullPath in mediaObjectsMap.keys) {
                 val candidate = mediaObjectsMap[photoFullPath]
                 if (candidate?.albumFullPath == albumFullPath)
-                    result.add(candidate)
+                    result[photoFullPath] = candidate
             }
             return result
         }
 
+//        private fun fitAlbumPathMapToArray(mediaObjectsMap: MutableMap<String, MyMediaObject>, albumFullPath: String): ArrayList<MyMediaObject> {
+//            val result = ArrayList<MyMediaObject>()
+//            for (photoFullPath in mediaObjectsMap.keys) {
+//                val candidate = mediaObjectsMap[photoFullPath]
+//                if (candidate?.albumFullPath == albumFullPath)
+//                    result.add(candidate)
+//            }
+//            return result
+//        }
+
         /**
          * returns a map Key=picture name with full path | Value = MyPhoto object
-         * WARNING: filtering by path will also return sub-folders content
          */
-        private fun getPictures(activity: Activity,sortOrder: String, path: String?=null): MutableMap<String, MyMediaObject> {
-            val imageCursor: Cursor? = getImageCursor(activity, sortOrder = sortOrder, path = path)
+        private fun getPictures(activity: Activity, sortOrder: String, albumPath: String?=null): MutableMap<String, MyMediaObject> {
+            val imageCursor: Cursor? = getImageCursor(activity, sortOrder = sortOrder, path = albumPath)
             if (imageCursor == null) {
                 Log.w("Files", "getImageCursor returned null")
                 return mutableMapOf()
             }
-            return getPhotosFromCursor(imageCursor)
+            return if (albumPath != null)
+                fitAlbumPathMap(getPhotosFromCursor(imageCursor), albumPath)
+            else getPhotosFromCursor(imageCursor)
         }
 
         /**
          * returns a map Key=video name with full path | Value = MyVideo object
-         * WARNING: filtering by path will also return sub-folders content
          */
-        private fun getVideos(activity: Activity,sortOrder: String, path: String?=null): MutableMap<String, MyMediaObject> {
-            val videoCursor: Cursor? = getVideoCursor(activity, sortOrder = sortOrder, path = path)
+        private fun getVideos(activity: Activity, sortOrder: String, albumPath: String?=null): MutableMap<String, MyMediaObject> {
+            val videoCursor: Cursor? = getVideoCursor(activity, sortOrder = sortOrder, path = albumPath)
             if (videoCursor == null) {
                 Log.w("Files", "getVideoCursor returned null")
                 return mutableMapOf()
             }
-            return getVideosFromCursor(videoCursor)
+            return if (albumPath != null)
+                fitAlbumPathMap(getVideosFromCursor(videoCursor), albumPath)
+            else getVideosFromCursor(videoCursor)
         }
 
         /**
