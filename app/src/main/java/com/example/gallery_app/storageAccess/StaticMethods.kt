@@ -8,7 +8,6 @@ import android.provider.MediaStore
 import android.util.Log
 import com.example.gallery_app.activities.ImageGridActivity
 
-
 class StaticMethods {
     companion object {
         private val projectionImages = arrayOf(
@@ -82,16 +81,6 @@ class StaticMethods {
             return result
         }
 
-//        private fun fitAlbumPathMapToArray(mediaObjectsMap: MutableMap<String, MyMediaObject>, albumFullPath: String): ArrayList<MyMediaObject> {
-//            val result = ArrayList<MyMediaObject>()
-//            for (photoFullPath in mediaObjectsMap.keys) {
-//                val candidate = mediaObjectsMap[photoFullPath]
-//                if (candidate?.albumFullPath == albumFullPath)
-//                    result.add(candidate)
-//            }
-//            return result
-//        }
-
         /**
          * returns a map Key=picture name with full path | Value = MyPhoto object
          */
@@ -151,7 +140,7 @@ class StaticMethods {
          * returns: map Key=path, without picture name | Value = List of Photos in the same folder
          */
         private fun createAlbums(photos: MutableMap<String, MyMediaObject>,
-                                 videos: MutableMap<String,MyMediaObject>? = null
+                                 videos: MutableMap<String,MyMediaObject>
                                 ): MutableMap<String, ArrayList<MyMediaObject>> {
             val albumMap: MutableMap<String, ArrayList<MyMediaObject>> = mutableMapOf()
 
@@ -163,19 +152,18 @@ class StaticMethods {
                         albumMap[photo.albumFullPath] = ArrayList()
                     albumMap[photo.albumFullPath]?.add(photo)
                 } else
-                    Log.w("Files", "photo was null for path key key: $key")
+                    Log.w("Files", "photo was null for path key: $key")
             }
-            if (videos != null)
-                for (key in videos.keys) {
-                    val video: MyMediaObject? = videos[key]
+            for (key in videos.keys) {
+                val video: MyMediaObject? = videos[key]
 
-                    if (video != null) {
-                        if (!albumMap.containsKey(video.albumFullPath))
-                            albumMap[video.albumFullPath] = ArrayList()
-                        albumMap[video.albumFullPath]?.add(video)
-                    } else
-                        Log.w("Files", "photo was null for path key key: $key")
-                }
+                if (video != null) {
+                    if (!albumMap.containsKey(video.albumFullPath))
+                        albumMap[video.albumFullPath] = ArrayList()
+                    albumMap[video.albumFullPath]?.add(video)
+                } else
+                    Log.w("Files", "video was null for path key: $key")
+            }
             return albumMap
         }
 

@@ -211,6 +211,9 @@ class FullscreenImageActivity : AppCompatActivity() {
         //if I have this lower that 300, the image will not re-center when the upper bar is hidden
     }
 
+    /**
+     * goes to the next image
+     */
     fun swipeLeft() {
         if (currentPosition < myMediaObjectsArray.size - 1) {
             currentPosition++
@@ -218,6 +221,9 @@ class FullscreenImageActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * goes to the previous image
+     */
     fun swipeRight() {
         if (currentPosition > 0) {
             currentPosition--
@@ -266,12 +272,15 @@ class FullscreenImageActivity : AppCompatActivity() {
 
     }
 
-    fun rightChipClicked(view: View) {
-        Toast.makeText(this, "TO IMPLEMENT: DELETE", Toast.LENGTH_LONG).show()
-
-//        val uri =  myPhotoArray[currentPosition].uri
-//        contentResolver.delete(uri, null, null)
-        // TO DO : IMPLEMENT DELETE
+    fun deleteChipClicked(view: View) {
+        contentResolver.delete(myMediaObjectsArray[currentPosition].uri, null, null)
+        if(myMediaObjectsArray.size == 1)
+            onBackPressed()
+        myMediaObjectsArray.removeAt(currentPosition)
+        if(currentPosition == myMediaObjectsArray.size)
+            swipeRight()
+        else
+            updateCurrentDisplayedPicture()
     }
 
     fun imagePlayButtonClicked(view: View) {

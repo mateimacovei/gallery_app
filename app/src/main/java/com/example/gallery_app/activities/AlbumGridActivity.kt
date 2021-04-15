@@ -5,7 +5,6 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.gallery_app.IMAGE_GRID_MESSAGE
 import com.example.gallery_app.R
 import com.example.gallery_app.adapter.AbstractMediaObjectHolder
@@ -28,18 +27,18 @@ class AlbumGridActivity : AbstractGridActivity() {
 
         this.onConfigurationChanged(this.resources.configuration)
 
-        val albums: ArrayList<MyPhotoAlbum> = StaticMethods.getAllAlbums(this)
-
-        if(albums.size!=0) {
-            val aga = AlbumGridAdapter(this, albums)
-            aga.setClickListener(this)
-            recycleViewerForAlbums.adapter = aga
-        }
-        else{
-            Log.w("Files", "NO ALBUMS RECEIVED")
-        }
+//        loadContent()
 
         this.title = "Albums"
+    }
+
+    override fun enableSelectionMode() {
+        holders.forEach {
+            run {
+                it.enableSelectionMode()
+            }
+        }
+        selectionMode = true
     }
 
     override fun disableSelectionMode(){
@@ -47,6 +46,8 @@ class AlbumGridActivity : AbstractGridActivity() {
             holder.disableSelectionMode()
         this.selectionMode = false
     }
+
+
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -83,14 +84,26 @@ class AlbumGridActivity : AbstractGridActivity() {
         if (selectionMode) {
             colorViewHolder.reverseSelection()
         } else {
-            holders.forEach {
-                run {
-                    it.enableSelectionMode()
-                }
-            }
+            enableSelectionMode()
             colorViewHolder.setAsSelected()
-            selectionMode = true
         }
+    }
+
+    fun loadContent(){
+        val albums: ArrayList<MyPhotoAlbum> = StaticMethods.getAllAlbums(this)
+        if(albums.size!=0) {
+            val aga = AlbumGridAdapter(this, albums)
+            aga.setClickListener(this)
+            recycleViewerForAlbums.adapter = aga
+        }
+        else{
+            Log.w("Files", "NO ALBUMS RECEIVED")
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadContent()
     }
 
 }

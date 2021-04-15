@@ -1,10 +1,7 @@
 package com.example.gallery_app.activities
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.res.Configuration
-import android.content.res.Configuration.ORIENTATION_LANDSCAPE
-import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
@@ -18,7 +15,6 @@ import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.gallery_app.*
 import com.example.gallery_app.adapter.AbstractMediaObjectHolder
 import com.example.gallery_app.adapter.ImageGridAdapter
@@ -27,16 +23,13 @@ import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhoto
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
-import kotlin.properties.Delegates
-
 
 class ImageGridActivity : AbstractGridActivity() {
     val holderImages: ArrayList<AbstractMediaObjectHolder> = ArrayList()
     private lateinit var imageGridAdapter: ImageGridAdapter
     lateinit var album: MyPhotoAlbum
 
-
-    var nrLoaded = 0
+    private var nrLoaded = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,23 +58,6 @@ class ImageGridActivity : AbstractGridActivity() {
         Log.i("Activity", "onCreate exit")
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.image_grid_layout_menu, menu)
-        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
-            Configuration.UI_MODE_NIGHT_YES ->
-                for (i in 0 until menu!!.size()) {
-                    val item = menu.getItem(i)
-                    val spanString = SpannableString(menu.getItem(i).title.toString())
-                    spanString.setSpan(ForegroundColorSpan(Color.WHITE), 0, spanString.length, 0) //fix the color to white
-                    item.title = spanString
-                }
-            Configuration.UI_MODE_NIGHT_NO -> {
-            }
-        }
-        return true
-    }
-
-
     private fun selectAll() {
         for (holder in holderImages)
             holder.setAsSelected()
@@ -102,7 +78,7 @@ class ImageGridActivity : AbstractGridActivity() {
         toolbarCheckBox.text = selected.toString()
     }
 
-    private fun enableSelectionMode() {
+    override fun enableSelectionMode() {
         selectionMode = true
         image_grid_toolbar.visibility = View.VISIBLE
         titleTextView.visibility = View.GONE
@@ -214,7 +190,7 @@ class ImageGridActivity : AbstractGridActivity() {
         Log.i("Files", "Image to open: ${imageColorViewHolder.myMediaObject}")
         val intentFullScreenImage = Intent(this, FullscreenImageActivity::class.java)
 
-        Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_ARRAY, this.album.mediaObjects)
+        Box.Add(intentFullScreenImage, FULLSCREEN_IMAGE_ARRAY, this.album.mediaObjects.clone())
         Box.Add(
                 intentFullScreenImage,
                 FULLSCREEN_IMAGE_POSITION,
@@ -287,6 +263,22 @@ class ImageGridActivity : AbstractGridActivity() {
             else
                 unselectAll()
         } else Log.w("Error", "checkbox was clicked outside of selectionMode")
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.image_grid_layout_menu, menu)
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_YES ->
+                for (i in 0 until menu!!.size()) {
+                    val item = menu.getItem(i)
+                    val spanString = SpannableString(menu.getItem(i).title.toString())
+                    spanString.setSpan(ForegroundColorSpan(Color.WHITE), 0, spanString.length, 0) //fix the color to white
+                    item.title = spanString
+                }
+            Configuration.UI_MODE_NIGHT_NO -> {
+            }
+        }
+        return true
     }
 
     fun selectMenuButtonClicked(item: MenuItem) {
@@ -414,7 +406,7 @@ class ImageGridActivity : AbstractGridActivity() {
         Log.i("Buttons", "clicked good search")
     }
 
-    fun backNavigationClicked(view: View) {
+    fun backNavigationClicked(v: View) {
         onBackPressed()
     }
 
