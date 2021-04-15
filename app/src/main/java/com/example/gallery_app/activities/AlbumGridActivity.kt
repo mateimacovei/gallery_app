@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.gallery_app.IMAGE_GRID_MESSAGE
 import com.example.gallery_app.R
+import com.example.gallery_app.adapter.AbstractMediaObjectHolder
 import com.example.gallery_app.adapter.AlbumGridAdapter
 import com.example.gallery_app.adapter.clickListenerInterfaces.AlbumItemClickListener
 import com.example.gallery_app.storageAccess.Box
@@ -19,7 +20,7 @@ import kotlinx.android.synthetic.main.activity_album_grid.*
 class AlbumGridActivity : AppCompatActivity(),
     AlbumItemClickListener {
     var selectionMode: Boolean = false
-    val holders: ArrayList<AlbumGridAdapter.ColorViewHolder> = ArrayList()
+    val holders: ArrayList<AbstractMediaObjectHolder> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

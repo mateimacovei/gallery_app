@@ -94,17 +94,14 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
         return albums.size
     }
 
-    inner class ColorViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener,
-        View.OnLongClickListener {
-        val imageView: ImageView = view.imageViewAlbum
-        val checkBox: CheckBox = view.checkBoxAlbum
+    inner class ColorViewHolder(view: View) : AbstractMediaObjectHolder(view) {
+        override val imageView: ImageView = view.imageViewAlbum
+        override val checkBox: CheckBox = view.checkBoxAlbum
         val albumNameTextView: TextView = view.albumNameTextView
         val albumCountTextView: TextView = view.albumItemsCount
         lateinit var album: MyPhotoAlbum
 
         init {
-            view.setOnClickListener(this)
-            view.setOnLongClickListener(this)
             imageView.setOnClickListener(this)
             imageView.setOnLongClickListener(this)
             checkBox.setOnClickListener(this)
@@ -153,7 +150,7 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
         /**
          * Unselects the photo and removes the checkbox and the imageButton
          */
-        fun disableSelectionMode() {
+        override fun disableSelectionMode() {
             setAsUnselected()
             checkBox.visibility = View.GONE
         }
@@ -162,7 +159,7 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
          * Makes the checkbox and the imageButton visible.
          * At this point, all pictures should be unselected; setAsSelected() will be called from now on
          */
-        fun enableSelectionMode() {
+        override fun enableSelectionMode() {
             checkBox.visibility = View.VISIBLE
         }
 
@@ -172,7 +169,7 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
          * adds tint
          * sets phote.selected = true
          */
-        fun setAsSelected() {
+        override fun setAsSelected() {
             checkBox.isChecked = true
             imageView.drawable.setTint(Color.GRAY)
             imageView.drawable.setTintBlendMode(BlendMode.MODULATE)
@@ -185,7 +182,7 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
          * removes the tint
          * sets phote.selected = false
          */
-        fun setAsUnselected() {
+        override fun setAsUnselected() {
             checkBox.isChecked = false
             imageView.drawable?.setTintList(null)
             album.selected = false

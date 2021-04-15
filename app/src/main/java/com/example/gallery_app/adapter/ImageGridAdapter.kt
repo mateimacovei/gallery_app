@@ -109,17 +109,16 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
         return images.size
     }
 
-    inner class ImageColorViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener,
-        View.OnLongClickListener {
-        val imageView: ImageView = view.imageViewPicture
-        val checkBox: CheckBox = view.checkBoxImage
+    inner class ImageColorViewHolder(view: View) : AbstractMediaObjectHolder(view) {
+        override val imageView: ImageView = view.imageViewPicture
+        override val checkBox: CheckBox = view.checkBoxImage
         val imageButtonFullscreen: ImageButton = view.imageButtonFullscreen
         lateinit var myMediaObject: MyMediaObject
         var photoPositionInMyArray: Int = 0
 
         init {
-            view.setOnClickListener(this)
-            view.setOnLongClickListener(this)
+//            view.setOnClickListener(this)
+//            view.setOnLongClickListener(this)
             imageView.setOnClickListener(this)
             imageView.setOnLongClickListener(this)
             checkBox.setOnClickListener(this)
@@ -128,12 +127,6 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
             imageButtonFullscreen.setOnLongClickListener(this)
 
             context.holderImages.add(this)
-//            imageView.post { this.updatePictureBySelection() }
-//            imageView.drawable.
-//            imageView.setOnLongClickListener(
-//
-//            })
-
         }
 
 
@@ -181,7 +174,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
         /**
          * Unselects the photo and removes the checkbox and the imageButton
          */
-        fun disableSelectionMode() {
+        override fun disableSelectionMode() {
             setAsUnselected()
             checkBox.visibility = View.GONE
             imageButtonFullscreen.visibility = View.GONE
@@ -191,7 +184,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
          * Makes the checkbox and the imageButton visible.
          * At this point, all pictures should be unselected; setAsSelected() will be called from now on
          */
-        fun enableSelectionMode() {
+        override fun enableSelectionMode() {
             checkBox.visibility = View.VISIBLE
             if (shouldShowFullscreenIcon(context.gridSize))
                 imageButtonFullscreen.visibility = View.VISIBLE
@@ -203,7 +196,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
          * adds tint
          * sets phote.selected = true
          */
-        fun setAsSelected() {
+        override fun setAsSelected() {
             checkBox.isChecked = true
             imageView.drawable.setTint(Color.GRAY)
             imageView.drawable.setTintBlendMode(BlendMode.MODULATE)
@@ -216,7 +209,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
          * removes the tint
          * sets phote.selected = false
          */
-        fun setAsUnselected() {
+        override fun setAsUnselected() {
             checkBox.isChecked = false
             imageView.drawable?.setTintList(null)
             myMediaObject.selected = false

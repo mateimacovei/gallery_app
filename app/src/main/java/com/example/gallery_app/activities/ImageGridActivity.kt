@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.gallery_app.*
+import com.example.gallery_app.adapter.AbstractMediaObjectHolder
 import com.example.gallery_app.adapter.ImageGridAdapter
 import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
 import com.example.gallery_app.storageAccess.*
@@ -31,15 +32,12 @@ import kotlinx.android.synthetic.main.image_grid_menu.*
 import kotlin.properties.Delegates
 
 
-const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
-
-class ImageGridActivity : AppCompatActivity(),
-    ImageItemClickListener {
+class ImageGridActivity : AbstractGridActivity() {
     //I need both, because I can have selection mode on with 0 selected
     var selectionMode: Boolean = false
     private var selected = 0
 
-    val holderImages: ArrayList<ImageGridAdapter.ImageColorViewHolder> = ArrayList()
+    val holderImages: ArrayList<AbstractMediaObjectHolder> = ArrayList()
     private lateinit var imageGridAdapter: ImageGridAdapter
     lateinit var album: MyPhotoAlbum
 
@@ -480,12 +478,16 @@ class ImageGridActivity : AppCompatActivity(),
                         this.onConfigurationChanged(this.resources.configuration)
                         updatePreferencesFile()
 
-                        if (shouldShowFullscreenIcon(oldGridSize) != shouldShowFullscreenIcon(gridSize) && selectionMode) {
+                        if (shouldShowFullscreenIcon(oldGridSize) != shouldShowFullscreenIcon(gridSize) && selectionMode && holderImages[0] is ImageGridAdapter.ImageColorViewHolder) {
                             when (shouldShowFullscreenIcon(gridSize)) {
-                                true -> for (holder in holderImages)
+                                true -> for (holder in holderImages) {
+                                    holder as ImageGridAdapter.ImageColorViewHolder
                                     holder.imageButtonFullscreen.visibility = View.VISIBLE
-                                false -> for (holder in holderImages)
+                                }
+                                false -> for (holder in holderImages) {
+                                    holder as ImageGridAdapter.ImageColorViewHolder
                                     holder.imageButtonFullscreen.visibility = View.GONE
+                                }
                             }
                         }
                     }
