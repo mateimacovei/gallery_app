@@ -20,16 +20,14 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.example.gallery_app.R
 import com.example.gallery_app.activities.ImageGridActivity
-import com.example.gallery_app.adapter.clickListenerInterfaces.ImageItemClickListener
 import com.example.gallery_app.storageAccess.MyMediaObject
-import com.example.gallery_app.storageAccess.MyPhoto
 import com.example.gallery_app.storageAccess.shouldShowFullscreenIcon
 import kotlinx.android.synthetic.main.item_image_in_grid.view.*
 import java.util.*
 
 class ImageGridAdapter(private val context: ImageGridActivity, private val images: ArrayList<MyMediaObject>) :
         RecyclerView.Adapter<ImageGridAdapter.ImageColorViewHolder>() {
-    var mClickListener: ImageItemClickListener? = null
+    var mClickListener: MyClickListener? = null
 
     override fun onCreateViewHolder(
             parent: ViewGroup,
@@ -94,15 +92,6 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
             holderImage.checkBox.visibility = View.GONE
             holderImage.imageButtonFullscreen.visibility = View.GONE
         }
-
-//        Picasso.get()
-//            .load(holder.photo.path)
-//            .resize(250, 250)
-//            .centerCrop()
-//            .into(holder.imageView)
-//        holder.imageView.setOnClickListener {
-//            //handle click event on image
-//        }
     }
 
     override fun getItemCount(): Int {
@@ -117,8 +106,6 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
         var photoPositionInMyArray: Int = 0
 
         init {
-//            view.setOnClickListener(this)
-//            view.setOnLongClickListener(this)
             imageView.setOnClickListener(this)
             imageView.setOnLongClickListener(this)
             checkBox.setOnClickListener(this)
@@ -129,46 +116,27 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
             context.holderImages.add(this)
         }
 
+        override fun isSelected(): Boolean{
+            return myMediaObject.selected
+        }
 
-        override fun onClick(view: View?) {
-            //important to check ImageButton first, as ImageButton extends ImageView
-            when (view) {
-                is ImageButton -> Log.i("Files", "short clicked ImageButton")
-                is ImageView -> Log.i("Files", "short clicked ImageView")
-                is CheckBox -> Log.i("Files", "short clicked CheckBox")
-                else -> Log.i("Files", "short clicked unidentified")
-            }
+        override fun onClick(v: View?) {
+            super.logClickedView(v)
             mClickListener?.onItemClick(
-                    view,
+                    v,
                     adapterPosition,
                     this
             )
         }
 
-        override fun onLongClick(view: View?): Boolean {
-            //important to check ImageButton first, as ImageButton extends ImageView
-            when (view) {
-                is ImageButton -> Log.i("Files", "long clicked ImageButton")
-                is ImageView -> Log.i("Files", "long clicked ImageView")
-                is CheckBox -> Log.i("Files", "long clicked CheckBox")
-                else -> Log.i("Files", "long clicked unidentified")
-            }
+        override fun onLongClick(v: View?): Boolean {
+            super.logClickedView(v)
             mClickListener?.onLongItemClick(
-                    view,
+                    v,
                     adapterPosition,
                     this
             )
             return true
-        }
-
-        /**
-         * enableSelectionMode() should have been previously called.
-         * calls setAsSelected() is the picture is unselected, setAsUnselected() otherwise
-         */
-        fun reverseSelection() {
-            if (myMediaObject.selected)
-                setAsUnselected()
-            else setAsSelected()
         }
 
         /**
@@ -222,7 +190,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
 //    }
 
     // allows clicks events to be caught
-    fun setClickListener(itemClickListener: ImageItemClickListener) {
+    fun setClickListener(itemClickListener: MyClickListener) {
         this.mClickListener = itemClickListener
     }
 }

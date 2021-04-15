@@ -19,13 +19,12 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.example.gallery_app.R
 import com.example.gallery_app.activities.AlbumGridActivity
-import com.example.gallery_app.adapter.clickListenerInterfaces.AlbumItemClickListener
 import com.example.gallery_app.storageAccess.MyPhotoAlbum
 import kotlinx.android.synthetic.main.item_album_in_grid.view.*
 
 class AlbumGridAdapter(private val context: AlbumGridActivity, private val albums: ArrayList<MyPhotoAlbum>) :
     RecyclerView.Adapter<AlbumGridAdapter.ColorViewHolder>() {
-    var mClickListener: AlbumItemClickListener? = null
+    var mClickListener: MyClickListener? = null
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -83,11 +82,6 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
 
         holder.albumNameTextView.text = holder.album.albumName
         holder.albumCountTextView.text = holder.album.mediaObjects.size.toString()
-
-//        holder.imageView.setOnClickListener {
-//            //handle click event on image
-//        }
-
     }
 
     override fun getItemCount(): Int {
@@ -110,41 +104,27 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
             context.holders.add(this)
         }
 
-        override fun onClick(view: View?) {
-            when (view) {
-                is ImageView -> Log.i("Files", "short clicked ImageView")
-                is CheckBox -> Log.i("Files", "short clicked CheckBox")
-                else -> Log.i("Files", "short clicked unidentified")
-            }
+        override fun isSelected(): Boolean{
+            return album.selected
+        }
+
+        override fun onClick(v: View?) {
+            super.logClickedView(v)
             mClickListener?.onItemClick(
-                view,
+                v,
                 adapterPosition,
                 this
             )
         }
 
-        override fun onLongClick(view: View?): Boolean {
-            when (view) {
-                is ImageView -> Log.i("Files", "long clicked ImageView")
-                is CheckBox -> Log.i("Files", "long clicked CheckBox")
-                else -> Log.i("Files", "long clicked unidentified")
-            }
+        override fun onLongClick(v: View?): Boolean {
+            super.logClickedView(v)
             mClickListener?.onLongItemClick(
-                view,
+                v,
                 adapterPosition,
                 this
             )
             return true
-        }
-
-        /**
-         * enableSelectionMode() should have been previously called.
-         * calls setAsSelected() is the picture is unselected, setAsUnselected() otherwise
-         */
-        fun reverseSelection() {
-            if (album.selected)
-                setAsUnselected()
-            else setAsSelected()
         }
 
         /**
@@ -190,7 +170,7 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
     }
 
     // allows clicks events to be caught
-    fun setClickListener(albumItemClickListener: AlbumItemClickListener) {
+    fun setClickListener(albumItemClickListener: MyClickListener) {
         this.mClickListener = albumItemClickListener
     }
 }

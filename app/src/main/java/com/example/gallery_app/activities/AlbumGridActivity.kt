@@ -5,37 +5,31 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.gallery_app.IMAGE_GRID_MESSAGE
 import com.example.gallery_app.R
 import com.example.gallery_app.adapter.AbstractMediaObjectHolder
 import com.example.gallery_app.adapter.AlbumGridAdapter
-import com.example.gallery_app.adapter.clickListenerInterfaces.AlbumItemClickListener
 import com.example.gallery_app.storageAccess.Box
+import com.example.gallery_app.storageAccess.GridSize
 import com.example.gallery_app.storageAccess.MyPhotoAlbum
 import com.example.gallery_app.storageAccess.StaticMethods
 import kotlinx.android.synthetic.main.activity_album_grid.*
 
-class AlbumGridActivity : AppCompatActivity(),
-    AlbumItemClickListener {
-    var selectionMode: Boolean = false
+class AlbumGridActivity : AbstractGridActivity() {
     val holders: ArrayList<AbstractMediaObjectHolder> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_album_grid)
 
-        val sglm = StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
-        recycleViewerForAlbums.layoutManager = sglm
+        loadPreferences()
+        this.gridSize= GridSize.S1
+
+        this.onConfigurationChanged(this.resources.configuration)
 
         val albums: ArrayList<MyPhotoAlbum> = StaticMethods.getAllAlbums(this)
 
-//        var i = 0
-//        while (i < albums.size && !selectionMode) {
-//            selectionMode = albums[i].selected
-//            i++
-//        }
         if(albums.size!=0) {
             val aga = AlbumGridAdapter(this, albums)
             aga.setClickListener(this)
@@ -45,39 +39,18 @@ class AlbumGridActivity : AppCompatActivity(),
             Log.w("Files", "NO ALBUMS RECEIVED")
         }
 
-        this.onConfigurationChanged(this.resources.configuration)
         this.title = "Albums"
     }
 
-    override fun onBackPressed() {
-        if (!this.selectionMode) {
-//            super.onBackPressed()
-            val data = Intent()
-//            data.putExtra("myData1", "Data 1 value")
-            setResult(RESULT_OK, data)
-            finish()
-        } else {
-            for (holder in holders)
-                holder.disableSelectionMode()
-            this.selectionMode = false
-        }
+    override fun disableSelectionMode(){
+        for (holder in holders)
+            holder.disableSelectionMode()
+        this.selectionMode = false
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-
-        when (newConfig.orientation) {
-            Configuration.ORIENTATION_PORTRAIT -> recycleViewerForAlbums.layoutManager =
-                    StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
-            Configuration.ORIENTATION_LANDSCAPE -> recycleViewerForAlbums.layoutManager =
-                    StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL)
-            else -> { // Note the block
-                Log.w(
-                        "Orientation",
-                        "Orientation in AlbumGridActivity was undefined at configuration change"
-                )
-            }
-        }
+        recycleViewerForAlbums.layoutManager = getNewLayoutManager(newConfig)
     }
 
     /**
@@ -86,11 +59,12 @@ class AlbumGridActivity : AppCompatActivity(),
     override fun onItemClick(
             view: View?,
             position: Int,
-            colorViewHolder: AlbumGridAdapter.ColorViewHolder,
+            colorViewHolder: AbstractMediaObjectHolder,
     ) {
         if (selectionMode) {
             colorViewHolder.reverseSelection()
         } else {
+            colorViewHolder as AlbumGridAdapter.ColorViewHolder
             val album = colorViewHolder.album
             val intentImageGrid = Intent(this, ImageGridActivity::class.java)
             Box.Add(intentImageGrid, IMAGE_GRID_MESSAGE, album)
@@ -104,7 +78,7 @@ class AlbumGridActivity : AppCompatActivity(),
     override fun onLongItemClick(
             view: View?,
             position: Int,
-            colorViewHolder: AlbumGridAdapter.ColorViewHolder,
+            colorViewHolder: AbstractMediaObjectHolder,
     ) {
         if (selectionMode) {
             colorViewHolder.reverseSelection()
