@@ -29,14 +29,10 @@ class ImageGridActivity : AbstractGridActivity() {
     private lateinit var imageGridAdapter: ImageGridAdapter
     lateinit var album: MyPhotoAlbum
 
-    private var nrLoaded = 0
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_grid)
         setSupportActionBar(image_grid_toolbar)
-
-        loadPreferences()
 
         this.onConfigurationChanged(this.resources.configuration)
         recycleViewerForImages.onFlingListener = MyOnFlingListener()
@@ -298,6 +294,8 @@ class ImageGridActivity : AbstractGridActivity() {
         val descendingRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.descendingRadioButton)
         val ascendingRadioButton: RadioButton = customAlertDialogView.findViewById(R.id.ascendingRadioButton)
 
+        var sortBy = PreferencesFileHandler.getSortBy(this)
+        var sortOrder = PreferencesFileHandler.getSortOrder(this)
         when (sortBy) {
             SortBy.NAME -> nameRadioButton.isChecked = true
             SortBy.DATE_MODIFIED -> dateModifiedRadioButton.isChecked = true
@@ -336,8 +334,8 @@ class ImageGridActivity : AbstractGridActivity() {
                     }
 
                     if (oldSortBy != sortBy || oldSortOrder != sortOrder) {
+                        PreferencesFileHandler.updateSort(this,sortBy,sortOrder)
                         loadPicturesFromAlbum(force = true)
-                        updatePreferencesFile()
                     }
                 }
                 .show()
@@ -353,6 +351,7 @@ class ImageGridActivity : AbstractGridActivity() {
         val radioButton3: RadioButton = customAlertDialogView.findViewById(R.id.radioButtonGridSize3)
         val radioButton4: RadioButton = customAlertDialogView.findViewById(R.id.radioButtonGridSize4)
 
+        var gridSize = PreferencesFileHandler.getGridSize(this)
         when (gridSize) {
             GridSize.S1 -> radioButton1.isChecked = true
             GridSize.S2 -> radioButton2.isChecked = true
@@ -381,8 +380,8 @@ class ImageGridActivity : AbstractGridActivity() {
                     }
 
                     if (oldGridSize != gridSize) {
+                        PreferencesFileHandler.updateGridSize(this,gridSize)
                         this.onConfigurationChanged(this.resources.configuration)
-                        updatePreferencesFile()
 
                         if (shouldShowFullscreenIcon(oldGridSize) != shouldShowFullscreenIcon(gridSize) && selectionMode && holderImages[0] is ImageGridAdapter.ImageColorViewHolder) {
                             when (shouldShowFullscreenIcon(gridSize)) {

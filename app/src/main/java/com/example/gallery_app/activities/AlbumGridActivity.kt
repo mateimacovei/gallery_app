@@ -22,12 +22,9 @@ class AlbumGridActivity : AbstractGridActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_album_grid)
 
-        loadPreferences()
-        this.gridSize= GridSize.S1
-
         this.onConfigurationChanged(this.resources.configuration)
 
-        loadContent()
+        loadContentInAlbumList(onCreate = true)
 
         this.title = "Albums"
     }
@@ -89,7 +86,13 @@ class AlbumGridActivity : AbstractGridActivity() {
         }
     }
 
-    fun loadContent(){
+    private fun loadContentInAlbumList(onCreate: Boolean = false){
+        Log.i("Activity", "loadContentInAlbumList entered: nrLoaded: $nrLoaded, onCreate = $onCreate")
+        if (nrLoaded < 3) {
+            nrLoaded++
+            if (nrLoaded == 2)
+                return
+        }
         val albums: ArrayList<MyPhotoAlbum> = StaticMethods.getAllAlbums(this)
         if(albums.size!=0) {
             val aga = AlbumGridAdapter(this, albums)
@@ -103,7 +106,7 @@ class AlbumGridActivity : AbstractGridActivity() {
 
     override fun onResume() {
         super.onResume()
-//        loadContent()
+        loadContentInAlbumList()
     }
 
 }

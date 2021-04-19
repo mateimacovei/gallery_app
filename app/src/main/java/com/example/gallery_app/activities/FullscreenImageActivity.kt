@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.GestureDetector
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
@@ -139,6 +140,12 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 //        }))
 
         toggle()    //I shuld modify the rest of onCreate to start with fullscreen mode
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        Log.i("Activity", "onOptionsItemSelected entered")
+        onBackPressed()
+        return true
     }
 
     private fun updateCurrentDisplayedPicture() {

@@ -48,8 +48,9 @@ class StaticMethods {
 //            }
 //            val picturesMap: MutableMap<String, MyMediaObject> = getPhotosFromCursor(imageCursor)
 
-            val picturesMap = getPictures(imageGridActivity, albumPath = imageGridActivity.album.albumFullPath, sortOrder = getSortOrderString(imageGridActivity.sortBy, imageGridActivity.sortOrder))
-            val videosMap = getVideos(imageGridActivity, albumPath = imageGridActivity.album.albumFullPath, sortOrder = getSortOrderString(imageGridActivity.sortBy, imageGridActivity.sortOrder))
+            val sortOrderString = getSortOrderString(sortBy = PreferencesFileHandler.getSortBy(imageGridActivity), sortOrder = PreferencesFileHandler.getSortOrder(imageGridActivity))
+            val picturesMap = getPictures(imageGridActivity, albumPath = imageGridActivity.album.albumFullPath, sortOrder = sortOrderString)
+            val videosMap = getVideos(imageGridActivity, albumPath = imageGridActivity.album.albumFullPath, sortOrder = sortOrderString)
 
             imageGridActivity.album.nrPhotos = picturesMap.size
             imageGridActivity.album.nrVideos = videosMap.size
@@ -113,8 +114,9 @@ class StaticMethods {
          * return an List containing all the photo albums
          */
         fun getAllAlbums(activity: Activity): ArrayList<MyPhotoAlbum> {
-            val picturesMap: MutableMap<String, MyMediaObject> = getPictures(activity,sortOrder = getSortOrderString(SortBy.DATE_MODIFIED, SortOrder.DESC))
-            val videosMap: MutableMap<String, MyMediaObject> = getVideos(activity,sortOrder = getSortOrderString(SortBy.DATE_MODIFIED, SortOrder.DESC))
+            val sortOrderString = getSortOrderString(sortBy = PreferencesFileHandler.getSortBy(activity), sortOrder = PreferencesFileHandler.getSortOrder(activity))
+            val picturesMap: MutableMap<String, MyMediaObject> = getPictures(activity,sortOrder = sortOrderString)
+            val videosMap: MutableMap<String, MyMediaObject> = getVideos(activity,sortOrder = sortOrderString)
 
             val provAlbumMap: MutableMap<String, ArrayList<MyMediaObject>> = createAlbums(picturesMap,videosMap)
 

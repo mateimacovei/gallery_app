@@ -18,18 +18,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
-
-
-
-
     </androidx.appcompat.widget.Toolbar>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycleViewerForImages"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:scrollbars="vertical"
         android:verticalScrollbarPosition="right"
+        android:fastScrollEnabled="true"
+
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

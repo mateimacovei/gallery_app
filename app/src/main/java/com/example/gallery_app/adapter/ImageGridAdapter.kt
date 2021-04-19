@@ -21,6 +21,7 @@ import com.bumptech.glide.request.target.Target
 import com.example.gallery_app.R
 import com.example.gallery_app.activities.ImageGridActivity
 import com.example.gallery_app.storageAccess.MyMediaObject
+import com.example.gallery_app.storageAccess.PreferencesFileHandler
 import com.example.gallery_app.storageAccess.shouldShowFullscreenIcon
 import kotlinx.android.synthetic.main.item_image_in_grid.view.*
 import java.util.*
@@ -86,7 +87,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
 
         if (context.selectionMode) {
             holderImage.checkBox.isChecked = holderImage.myMediaObject.selected
-            if(!shouldShowFullscreenIcon(context.gridSize))
+            if(!shouldShowFullscreenIcon(PreferencesFileHandler.getGridSize(context)))
                 holderImage.imageButtonFullscreen.visibility = View.GONE
         } else {
             holderImage.checkBox.visibility = View.GONE
@@ -154,7 +155,7 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
          */
         override fun enableSelectionMode() {
             checkBox.visibility = View.VISIBLE
-            if (shouldShowFullscreenIcon(context.gridSize))
+            if (shouldShowFullscreenIcon(PreferencesFileHandler.getGridSize(context)))
                 imageButtonFullscreen.visibility = View.VISIBLE
         }
 
