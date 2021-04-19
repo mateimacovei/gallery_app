@@ -1,11 +1,14 @@
 package com.example.gallery_app.activities
 
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
-import android.net.Uri
+import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
@@ -18,11 +21,16 @@ import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
 import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
 import com.example.gallery_app.adapter.customViews.ZoomImageView
+import com.example.gallery_app.adapter.gestureListeners.MyFlingListener
+import com.example.gallery_app.adapter.gestureListeners.MyGestureListener
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyMediaObject
 import com.example.gallery_app.storageAccess.MyPhoto
 import com.example.gallery_app.storageAccess.MyVideo
 import kotlinx.android.synthetic.main.activity_fullscreen_image.*
+import kotlinx.android.synthetic.main.activity_image_detail.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 private const val DEBUG_TAG = "Gestures"
@@ -31,13 +39,14 @@ private const val DEBUG_TAG = "Gestures"
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-class FullscreenImageActivity : AppCompatActivity() {
+class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     private lateinit var fullscreenContent: ZoomImageView
     private lateinit var fullscreenContentControls: LinearLayout
     private val hideHandler = Handler()
 
     private lateinit var myMediaObjectsArray: ArrayList<MyMediaObject>
     private var currentPosition: Int = 0
+    private var inSplitView = false
 
     @SuppressLint("InlinedApi")
     private val hidePart2Runnable = Runnable {
@@ -93,16 +102,27 @@ class FullscreenImageActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_fullscreen_image)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        detail_split_view.visibility = View.GONE
 
         isFullscreen = true
 
         // Set up the user interaction to manually show or hide the system UI.
         fullscreenContent = findViewById(R.id.fullscreen_ImageView)
         fullscreenContent.setOnClickListener { toggle() }
-        fullscreenContent.fullscreenImageActivity = this
+        fullscreenContent.setListener(this)
         fullscreenContentControls = findViewById(R.id.fullscreen_content_controls)
 
-
+        detailsConstraintLayout.setOnClickListener{}
+        //FUN FACT: if I don't set a separate onClickListener, it will never reach fling
+        val myGestureListener = MyGestureListener(this)
+        val gestureDetector = GestureDetector(this, myGestureListener)
+        detailsConstraintLayout.setOnTouchListener(View.OnTouchListener(fun(
+                _: View,
+                event: MotionEvent
+        ): Boolean {
+            Log.i("Gestures", "OnTouchListener called")
+            return gestureDetector.onTouchEvent(event)
+        }))
 
         myMediaObjectsArray = Box.Get(intent, FULLSCREEN_IMAGE_ARRAY)
         currentPosition = Box.Get(intent, FULLSCREEN_IMAGE_POSITION)
@@ -122,6 +142,7 @@ class FullscreenImageActivity : AppCompatActivity() {
     }
 
     private fun updateCurrentDisplayedPicture() {
+        Log.i("Activity", "updating current picture")
 //        this.title = myPhotoArray[currentPosition].name
         title = ""
 
@@ -138,6 +159,7 @@ class FullscreenImageActivity : AppCompatActivity() {
                 .apply(options)
                 .fitCenter()
                 .into(fullscreenContent)
+        updateDetails()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -150,11 +172,12 @@ class FullscreenImageActivity : AppCompatActivity() {
     }
 
     private fun toggle() {
-        if (isFullscreen) {
-            hide()
-        } else {
-            show()
-        }
+        if (!inSplitView)
+            if (isFullscreen) {
+                hide()
+            } else {
+                show()
+            }
     }
 
     private fun hide() {
@@ -214,7 +237,7 @@ class FullscreenImageActivity : AppCompatActivity() {
     /**
      * goes to the next image
      */
-    fun swipeLeft() {
+    override fun swipeLeft() {
         if (currentPosition < myMediaObjectsArray.size - 1) {
             currentPosition++
             updateCurrentDisplayedPicture()
@@ -224,21 +247,81 @@ class FullscreenImageActivity : AppCompatActivity() {
     /**
      * goes to the previous image
      */
-    fun swipeRight() {
+    override fun swipeRight() {
         if (currentPosition > 0) {
             currentPosition--
             updateCurrentDisplayedPicture()
         }
     }
 
-    fun swipeUp() {
-        val intentDetailsPage = Intent(this, ImageDetailActivity::class.java)
-        Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myMediaObjectsArray[currentPosition])
-        this.startActivity(intentDetailsPage)
+    private fun updateDetails() {
+        val mediaObject = myMediaObjectsArray[currentPosition]
+        textViewDate.text = SimpleDateFormat("dd MMMM yyyy").format(
+                mediaObject.DATE_MODIFIED?.toLong()?.times(1000)?.let { Date(it) })
+
+        if (mediaObject.name.length <= 30)
+            textViewTitle.text = mediaObject.name
+        else
+            textViewTitle.text = (mediaObject.name.subSequence(0, 30).toString() + "...")
+
+        textViewPath.text = mediaObject.albumFullPath
+
+        if (mediaObject.SIZE != null) {
+            var size: Double = mediaObject.SIZE!!
+            val rate = 1025
+
+            if (size / rate < rate)
+                ("${"%.2f".format(size / rate)} KB").also { textViewSize.text = it }
+            else {
+                size /= rate
+                if (size / rate < rate)
+                    ("${"%.2f".format(size / rate)} MB").also { textViewSize.text = it }
+                else {
+                    size /= rate
+                    ("${"%.2f".format(size / rate)} GB").also { textViewSize.text = it }
+                }
+            }
+        }
+
+        chipCopyNameToClipboard.setOnClickListener {
+            Toast.makeText(this, "Name copied to clipboard", Toast.LENGTH_SHORT).show()
+            val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val clip: ClipData = ClipData.newPlainText(mediaObject.name, mediaObject.name)
+            clipboard.setPrimaryClip(clip)
+        }
+
+        if (mediaObject.HEIGHT != null)
+            (mediaObject.WIDTH + "x" + mediaObject.HEIGHT).also { textViewResolution.text = it }
+        else textViewResolution.text = ""
     }
 
-    fun swipeDown() {
-        onBackPressed()
+    override fun swipeUp() {
+        if (!inSplitView) {
+            inSplitView = true
+            if (isFullscreen)
+                hide()
+            detail_split_view.visibility = View.VISIBLE
+        }
+        else {
+            val intentDetailsPage = Intent(this, ImageDetailActivity::class.java)
+            Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myMediaObjectsArray[currentPosition])
+            this.startActivity(intentDetailsPage)
+        }
+    }
+
+    override fun swipeDown() {
+        if (!inSplitView)
+            onBackPressed()
+        else {
+            inSplitView = false
+            detail_split_view.visibility = View.GONE
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        //if I don't call hide(), when I go back from the detail activity, the bottom bar is still there
+        hide()
     }
 
     fun leftChipClicked(view: View) {
@@ -274,10 +357,10 @@ class FullscreenImageActivity : AppCompatActivity() {
 
     fun deleteChipClicked(view: View) {
         contentResolver.delete(myMediaObjectsArray[currentPosition].uri, null, null)
-        if(myMediaObjectsArray.size == 1)
+        if (myMediaObjectsArray.size == 1)
             onBackPressed()
         myMediaObjectsArray.removeAt(currentPosition)
-        if(currentPosition == myMediaObjectsArray.size)
+        if (currentPosition == myMediaObjectsArray.size)
             swipeRight()
         else
             updateCurrentDisplayedPicture()

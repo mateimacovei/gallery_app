@@ -9,36 +9,34 @@ import android.view.ScaleGestureDetector
 import androidx.appcompat.widget.AppCompatImageView
 import android.graphics.Matrix
 import android.view.GestureDetector
-import android.view.View
-import com.example.gallery_app.activities.FullscreenImageActivity
+import com.example.gallery_app.adapter.gestureListeners.MyFlingListener
+import com.example.gallery_app.adapter.gestureListeners.MyGestureListener
+import kotlin.math.abs
 
-const val VELOCITY_THRESHOLD: Long = 150
-//TO DO: adjust this
-
-open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener {
+open class ZoomImageView : AppCompatImageView {
     var matri: Matrix? = null
     var mode = NONE
 
     // Remember some things for zooming
-    var last = PointF()
-    var start = PointF()
+    private var last = PointF()
+    private var start = PointF()
     var minScale = 1f
     var maxScale = 6f
-    lateinit var m: FloatArray
+    private lateinit var m: FloatArray
     var viewWidth = 0
     var viewHeight = 0
     var saveScale = 1f
     protected var origWidth = 0f
     protected var origHeight = 0f
-    var oldMeasuredWidth = 0
-    var oldMeasuredHeight = 0
-    var mScaleDetector: ScaleGestureDetector? = null
-    var contex: Context? = null
+    private var oldMeasuredWidth = 0
+    private var oldMeasuredHeight = 0
+    private var mScaleDetector: ScaleGestureDetector? = null
+    private var contex: Context? = null
 
     //needed for gestureListener
     var isFullscreen: Boolean = true
-    lateinit var fullscreenImageActivity: FullscreenImageActivity
-    //
+    private val zoomMyGestureListener: ZoomMyGestureListener = ZoomMyGestureListener()
+
 
     constructor(context: Context) : super(context) {
         sharedConstructing(context)
@@ -53,13 +51,13 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
         this.contex = context
         mScaleDetector = ScaleGestureDetector(context, ScaleListener())
 
-        val gestureDetector = GestureDetector(context, this)
+        val gestureDetector = GestureDetector(context, zoomMyGestureListener)
 
         matri = Matrix()
         m = FloatArray(9)
         imageMatrix = matri
         scaleType = ScaleType.MATRIX
-        setOnTouchListener { v, event ->
+        setOnTouchListener { _, event ->
             mScaleDetector!!.onTouchEvent(event)
             val curr = PointF(event.x, event.y)
             when (event.action) {
@@ -79,8 +77,8 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
                 }
                 MotionEvent.ACTION_UP -> {
                     mode = NONE
-                    val xDiff = Math.abs(curr.x - start.x).toInt()
-                    val yDiff = Math.abs(curr.y - start.y).toInt()
+                    val xDiff = abs(curr.x - start.x).toInt()
+                    val yDiff = abs(curr.y - start.y).toInt()
                     if (xDiff < CLICK && yDiff < CLICK) performClick()
                 }
                 MotionEvent.ACTION_POINTER_UP -> mode = NONE
@@ -91,6 +89,10 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
 
             true // indicate event was handled
         }
+    }
+
+    fun setListener(listener: MyFlingListener) {
+        zoomMyGestureListener.listener = listener
     }
 
     fun setMaxZoom(x: Float) {
@@ -122,61 +124,13 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
         }
     }
 
-    override fun onDown(e: MotionEvent?): Boolean {
-        Log.i("Gestures", "onDown called")
-        return false
-    }
-
-    override fun onShowPress(e: MotionEvent?) {
-        Log.i("Gestures", "onShowPress called")
-    }
-
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
-        Log.i("Gestures", "onSingleTapUp called")
-        return false
-    }
-
-    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-        Log.i("Gestures", "onScroll called")
-        return false
-    }
-
-    override fun onLongPress(e: MotionEvent?) {
-        Log.i("Gestures", "onLongPress called")
-    }
-
-    override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-        Log.i("Gestures", "onFling called, isFullscreen= $isFullscreen")
-        if (isFullscreen) {
-            if (Math.abs(velocityX) < VELOCITY_THRESHOLD
-                    && Math.abs(velocityY) < VELOCITY_THRESHOLD)
-                return false //if the fling is not fast enough then it's just like drag
-
-            if (Math.abs(velocityX) > Math.abs(velocityY)) {
-                if (velocityX >= 0) {
-                    Log.i("Gestures", "swipe right")
-                    fullscreenImageActivity.swipeRight()
-
-                } else {
-                    Log.i("Gestures", "swipe left")
-                    fullscreenImageActivity.swipeLeft()
-
-                }
-            } else {
-                if (velocityY >= 0) {
-                    Log.i("Gestures", "swipe down")
-                    fullscreenImageActivity.swipeDown()
-                } else {
-                    Log.i("Gestures", "swipe up")
-                    fullscreenImageActivity.swipeUp()
-
-                }
-            }
-
+    inner class ZoomMyGestureListener() : MyGestureListener() {
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+            Log.i("Gestures", "onFling called, isFullscreen= $isFullscreen")
+            if (isFullscreen)
+                super.onFling(e1, e2, velocityX, velocityY)
             return true
-
         }
-        return true
     }
 
 //    }
@@ -190,7 +144,7 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
         if (fixTransX != 0f || fixTransY != 0f) matri!!.postTranslate(fixTransX, fixTransY)
     }
 
-    fun getFixTrans(trans: Float, viewSize: Float, contentSize: Float): Float {
+    private fun getFixTrans(trans: Float, viewSize: Float, contentSize: Float): Float {
         val minTrans: Float
         val maxTrans: Float
         if (contentSize <= viewSize) {
@@ -205,17 +159,17 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
         return 0f
     }
 
-    fun getFixDragTrans(delta: Float, viewSize: Float, contentSize: Float): Float {
-        if (contentSize <= viewSize) {
-            return 0f
+    private fun getFixDragTrans(delta: Float, viewSize: Float, contentSize: Float): Float {
+        return if (contentSize <= viewSize) {
+            0f
         } else {
-            return delta
+            delta
         }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        viewWidth = View.MeasureSpec.getSize(widthMeasureSpec)
+        viewWidth = MeasureSpec.getSize(widthMeasureSpec)
         viewHeight = MeasureSpec.getSize(heightMeasureSpec)
         //
         // Rescales image on rotation
@@ -233,7 +187,7 @@ open class ZoomImageView : AppCompatImageView,GestureDetector.OnGestureListener 
             Log.d("bmSize", "bmWidth: $bmWidth bmHeight : $bmHeight")
             val scaleX = viewWidth.toFloat() / bmWidth.toFloat()
             val scaleY = viewHeight.toFloat() / bmHeight.toFloat()
-            scale = Math.min(scaleX, scaleY)
+            scale = scaleX.coerceAtMost(scaleY)
             matri!!.setScale(scale, scale)
             // Center the image
             var redundantYSpace = viewHeight.toFloat() - scale * bmHeight.toFloat()

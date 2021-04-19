@@ -27,7 +27,7 @@ class AlbumGridActivity : AbstractGridActivity() {
 
         this.onConfigurationChanged(this.resources.configuration)
 
-//        loadContent()
+        loadContent()
 
         this.title = "Albums"
     }
@@ -103,7 +103,7 @@ class AlbumGridActivity : AbstractGridActivity() {
 
     override fun onResume() {
         super.onResume()
-        loadContent()
+//        loadContent()
     }
 
 }

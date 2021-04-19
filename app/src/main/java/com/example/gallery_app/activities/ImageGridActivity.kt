@@ -39,8 +39,7 @@ class ImageGridActivity : AbstractGridActivity() {
         loadPreferences()
 
         this.onConfigurationChanged(this.resources.configuration)
-        val onFlingListener = MyOnFlingListener()
-        recycleViewerForImages.onFlingListener = onFlingListener
+        recycleViewerForImages.onFlingListener = MyOnFlingListener()
 
         album = Box.Get(intent, IMAGE_GRID_MESSAGE)
         Box.Remove(intent)

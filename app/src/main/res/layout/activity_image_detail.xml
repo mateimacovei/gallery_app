@@ -5,23 +5,75 @@
     android:id="@+id/detailsConstraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.ImageDetailActivity">
+    android:backgroundTint="@color/black">
+<!--    tools:context=".activities.ImageDetailActivity">-->
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/tagsChipGroup"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:paddingLeft="@dimen/fab_margin"
+        android:paddingLeft="2dp"
+        android:paddingRight="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView5" />
+        app:layout_constraintTop_toBottomOf="@+id/textView5">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="tag 1 gjiofds" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="tag 1 gjiofds" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ffffffffffffffffffffffffffff" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="tag 1 gjiofds" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip11"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="tag 1 gjiofds" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="rrrrrrrrr ffffffffffff" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip13"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="gfdhyfg ghf" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip14"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="hjguifd" />
+    </com.google.android.material.chip.ChipGroup>
 
     <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:padding="@dimen/fab_margin"
+        android:layout_marginStart="4dp"
+
+        android:layout_marginTop="32dp"
         android:text="Tags:"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewSize" />
@@ -74,10 +126,9 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.chip.Chip
-        android:id="@+id/chip7"
+        android:id="@+id/chipCopyNameToClipboard"
         android:layout_width="31dp"
         android:layout_height="32dp"
-        android:onClick="copyToClipboardPressed"
         app:chipIcon="@android:drawable/ic_menu_save"
         app:layout_constraintBottom_toBottomOf="@+id/textViewTitle"
         app:layout_constraintStart_toEndOf="@+id/textViewTitle"

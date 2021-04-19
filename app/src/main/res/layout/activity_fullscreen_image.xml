@@ -1,92 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/black"
     android:theme="@style/ThemeOverlay.gallery_app.FullscreenContainer"
-    tools:context=".activities.FullscreenImageActivity">
+    tools:context=".activities.FullscreenImageActivity"
+    android:orientation="vertical">
 
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
-    <com.example.gallery_app.adapter.customViews.ZoomImageView
-        android:id="@+id/fullscreen_ImageView"
+    <FrameLayout
+        android:id="@+id/frameLayoutZoomImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"/>
+        android:layout_weight="2">
 
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
 
-        <ImageView
-            android:id="@+id/imageViewPlayButton"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:onClick="imagePlayButtonClicked"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@android:drawable/ic_media_play" />
-
-        <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
-            style="@style/Widget.Theme.gallery_app.ButtonBar.Fullscreen"
+        <com.example.gallery_app.adapter.customViews.ZoomImageView
+            android:id="@+id/fullscreen_ImageView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:ignore="UselessParent">
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
 
-            <com.google.android.material.chip.ChipGroup
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                app:singleLine="true">
+        <!-- This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows. -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:animateLayoutChanges="false"
+            android:fitsSystemWindows="true">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip6"
+
+            <ImageView
+                android:id="@+id/imageViewPlayButton"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:onClick="imagePlayButtonClicked"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@android:drawable/ic_media_play" />
+
+            <LinearLayout
+                android:id="@+id/fullscreen_content_controls"
+                style="@style/Widget.Theme.gallery_app.ButtonBar.Fullscreen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:ignore="UselessParent">
+
+                <com.google.android.material.chip.ChipGroup
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="leftChipClicked"
-                    app:chipIcon="@android:drawable/ic_menu_edit"
-                    app:chipSurfaceColor="@android:color/transparent" />
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    app:singleLine="true">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="middleChipClicked"
-                    app:chipIcon="@android:drawable/ic_menu_share"
-                    app:chipSurfaceColor="@android:color/transparent" />
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="leftChipClicked"
+                        app:chipIcon="@android:drawable/ic_menu_edit"
+                        app:chipSurfaceColor="@android:color/transparent" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="deleteChipClicked"
-                    app:chipIcon="@android:drawable/ic_menu_delete"
-                    app:chipSurfaceColor="@android:color/transparent" />
-            </com.google.android.material.chip.ChipGroup>
-        </LinearLayout>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="middleChipClicked"
+                        app:chipIcon="@android:drawable/ic_menu_share"
+                        app:chipSurfaceColor="@android:color/transparent" />
 
-<!--        <ImageView-->
-<!--            android:id="@+id/imageView"-->
-<!--            android:layout_width="100dp"-->
-<!--            android:layout_height="100dp"-->
-<!--            app:srcCompat="@android:drawable/ic_media_play"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintEnd_toEndof="parent"/>-->
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="deleteChipClicked"
+                        app:chipIcon="@android:drawable/ic_menu_delete"
+                        app:chipSurfaceColor="@android:color/transparent" />
+                </com.google.android.material.chip.ChipGroup>
+            </LinearLayout>
 
-</FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
+
+
+
+    <FrameLayout
+        android:id="@+id/detail_split_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="3">
+
+        <include
+            layout="@layout/activity_image_detail"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent" />
+    </FrameLayout>
+
+</LinearLayout>
