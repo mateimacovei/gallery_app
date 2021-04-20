@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
@@ -107,6 +108,13 @@ class ImageGridAdapter(private val context: ImageGridActivity, private val image
         var photoPositionInMyArray: Int = 0
 
         init {
+//            imageView.setOnTouchListener(View.OnTouchListener(fun(
+//                    _: View,
+//                    event: MotionEvent
+//            ): Boolean {
+//                Log.i("Gestures", "imageView OnTouchListener called, position: $photoPositionInMyArray")
+//                return false
+//            }))
             imageView.setOnClickListener(this)
             imageView.setOnLongClickListener(this)
             checkBox.setOnClickListener(this)

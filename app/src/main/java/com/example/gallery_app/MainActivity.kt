@@ -5,13 +5,18 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.room.Room
 import com.example.gallery_app.activities.AlbumGridActivity
+import com.example.gallery_app.database.AppDatabase
+import com.example.gallery_app.database.domain.Tag
+import kotlin.concurrent.thread
 
 const val IMAGE_GRID_MESSAGE = "com.example.gallery_app.IMAGEGRID"
 const val FULLSCREEN_IMAGE_ARRAY = "com.example.gallery_app.FULLSCREENIMAGEARRAY"
@@ -25,13 +30,39 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        title=""
+        title = ""
 
         requestPermissions()
         // TO DO : request StorageMedia refresh
 
         val intentAlbumGrid = Intent(this, AlbumGridActivity::class.java)
         this.startActivityForResult(intentAlbumGrid, 1)
+
+//        thread {
+//            val db = Room.databaseBuilder(
+//                applicationContext,
+//                AppDatabase::class.java, "my-gallery-database"
+//            ).build()
+//
+//            val tagDAO = db.tagDao()
+////            tagDAO.insertAll(Tag(name = "test tag 1"), Tag(name = "test tag 2"), Tag(name = "ははは"))
+//            val tags = tagDAO.getAll()
+//            db.close()
+//            Log.i("Tags", "Found: ${tags.size}")
+//            tags.forEach { run{Log.i("Tags", "${it.name}")} }
+//            runOnUiThread {
+//                Runnable {
+//                    Toast.makeText(
+//                        this,
+//                        "last tag: ${tags[tags.lastIndex].name}",
+//                        Toast.LENGTH_SHORT
+//                    )
+//                        .show()
+//
+//                }
+//            }
+//
+//        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

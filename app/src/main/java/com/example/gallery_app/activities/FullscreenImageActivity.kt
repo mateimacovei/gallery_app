@@ -9,11 +9,11 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
-import android.os.Handler
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.*
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +34,7 @@ import kotlinx.android.synthetic.main.activity_fullscreen_image.*
 import kotlinx.android.synthetic.main.activity_image_detail.*
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.concurrent.thread
 
 
 private const val DEBUG_TAG = "Gestures"
@@ -73,7 +74,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         fullscreenContent.setMyFlingListener(this)
         fullscreenContentControls = findViewById(R.id.fullscreen_content_controls)
 
-        detailsConstraintLayout.setOnClickListener{}
+        detailsConstraintLayout.setOnClickListener {}
         //FUN FACT: if I don't set a separate onClickListener, it will never reach fling
         val myGestureListener = MyGestureListener(this)
         val gestureDetector = GestureDetector(this, myGestureListener)
@@ -81,7 +82,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
                 _: View,
                 event: MotionEvent
         ): Boolean {
-            Log.i("Gestures", "OnTouchListener called")
+            Log.i("Gestures", "details OnTouchListener called")
             return gestureDetector.onTouchEvent(event)
         }))
 
@@ -116,12 +117,41 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         return true
     }
 
-    fun detailsMenuButtonClicked(item: MenuItem){
+    fun detailsMenuButtonClicked(item: MenuItem) {
         startDetailsActivity()
     }
 
+    private fun loadFullscreenPicture() {
+        fullscreenContent.requestLayout()
+        Log.i("Activity", "entered loadFullscreenPicture")
+        val options: RequestOptions = RequestOptions()
+//                .centerCrop()
+                .error(R.mipmap.ic_launcher_round)
+        Glide.with(this)
+                .load(myMediaObjectsArray[currentPosition].uri)
+                .apply(options)
+//                .fitCenter()
+                .into(fullscreenContent)
+    }
+
+    private fun loadSplitScreenPicture() {
+//        fullscreenContent.visibility = View.GONE
+//        fullscreenContent.visibility = View.VISIBLE
+        fullscreenContent.invalidate()
+        Log.i("Activity", "entered loadSplitScreenPicture")
+        val options: RequestOptions = RequestOptions()
+                .centerCrop()
+                .error(R.mipmap.ic_launcher_round)
+        Glide.with(this)
+                .load(myMediaObjectsArray[currentPosition].uri)
+                .apply(options)
+//                .fitCenter()
+                .into(fullscreenContent)
+
+    }
+
     private fun updateCurrentDisplayedPicture() {
-        Log.i("Activity", "updating current picture")
+        Log.i("Activity", "updating current picture, inSplitView:$inSplitView")
 //        this.title = myPhotoArray[currentPosition].name
         title = ""
 
@@ -130,14 +160,9 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         else
             imageViewPlayButton.visibility = View.GONE
 
-        val options: RequestOptions = RequestOptions()
-                .centerCrop()
-                .error(R.mipmap.ic_launcher_round)
-        Glide.with(this)
-                .load(myMediaObjectsArray[currentPosition].uri)
-                .apply(options)
-                .fitCenter()
-                .into(fullscreenContent)
+        if (!inSplitView)
+            loadFullscreenPicture()
+        else loadSplitScreenPicture()
         updateDetails()
     }
 
@@ -163,6 +188,20 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         fullscreenContentControls.visibility = View.VISIBLE
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
         isFullscreen = false
+    }
+
+    private fun hideDetails() {
+        inSplitView = false
+        detail_split_view.visibility = View.GONE
+        loadFullscreenPicture()
+    }
+
+    private fun showDetails() {
+        inSplitView = true
+        if (!isFullscreen)
+            hideControls()
+        detail_split_view.visibility = View.VISIBLE
+        loadSplitScreenPicture()
     }
 
     /**
@@ -226,19 +265,15 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         else textViewResolution.text = ""
     }
 
-    private fun startDetailsActivity(){
+    private fun startDetailsActivity() {
         val intentDetailsPage = Intent(this, ImageDetailActivity::class.java)
         Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myMediaObjectsArray[currentPosition])
         this.startActivity(intentDetailsPage)
     }
 
     override fun swipeUp() {
-        if (!inSplitView) {
-            inSplitView = true
-            if (!isFullscreen)
-                hideControls()
-            detail_split_view.visibility = View.VISIBLE
-        }
+        if (!inSplitView)
+            showDetails()
         else
             startDetailsActivity()
     }
@@ -250,10 +285,8 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     override fun onBackPressed() {
         if (!inSplitView)
             super.onBackPressed()
-        else {
-            inSplitView = false
-            detail_split_view.visibility = View.GONE
-        }
+        else
+            hideDetails()
     }
 
     override fun onResume() {
