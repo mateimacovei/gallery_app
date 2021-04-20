@@ -2,8 +2,8 @@
     <!-- Base application theme. -->
     <style name="Theme.gallery_app" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorPrimary">@color/grey</item>
+        <item name="colorPrimaryVariant">@color/black</item>
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
@@ -19,13 +19,21 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.gallery_app.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.gallery_app.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
+    </style>
 
-    <style name="Theme.gallery_app.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.gallery_app.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
+    </style>
 
     <style name="Theme.gallery_app.Fullscreen" parent="Theme.gallery_app">
-        <item name="android:actionBarStyle">@style/Widget.Theme.gallery_app.ActionBar.Fullscreen</item>
+<!--        <item name="windowActionBar">false</item>-->
+<!--        <item name="windowNoTitle">true</item>-->
         <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
         <item name="android:windowBackground">@null</item>
     </style>
 

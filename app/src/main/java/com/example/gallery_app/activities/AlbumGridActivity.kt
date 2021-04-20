@@ -27,8 +27,6 @@ class AlbumGridActivity : AbstractGridActivity() {
         loadContentInAlbumList(onCreate = true)
 
         this.title = "Albums"
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
-        supportActionBar?.hide()
     }
 
     override fun enableSelectionMode() {

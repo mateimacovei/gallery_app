@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<!--    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
@@ -21,12 +21,12 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_fullscreen_image"
             android:theme="@style/Theme.gallery_app.Fullscreen" >
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="image" />
-                <data android:mimeType="*/*"/>
-            </intent-filter>
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW"/>-->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <data android:scheme="image" />-->
+<!--                <data android:mimeType="*/*"/>-->
+<!--            </intent-filter>-->
         </activity>
 
 <!--        <receiver android:name=".activities.FullscreenImageActivity"-->
@@ -40,11 +40,7 @@
 
         <activity
             android:name=".activities.AlbumGridActivity"
-            android:configChanges="orientation|screenSize" /> <!-- <activity -->
-        <!-- android:name=".activities.PictureGridActivity" -->
-        <!-- android:configChanges="orientation|screenSize" -->
-        <!-- android:label="@string/title_activity_picture_grid" -->
-        <!-- android:theme="@style/Theme.gallery_app.NoActionBar" /> -->
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.ImageGridActivity"
             android:configChanges="orientation|screenSize"

@@ -5,7 +5,7 @@
     </style>
 
     <style name="Widget.Theme.gallery_app.ButtonBar.Fullscreen" parent="">
-        <item name="android:background">@color/black_overlay</item>
+        <item name="android:background">@color/transparent</item>
         <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
     </style>
 </resources>

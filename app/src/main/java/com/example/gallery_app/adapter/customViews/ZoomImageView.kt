@@ -91,7 +91,7 @@ open class ZoomImageView : AppCompatImageView {
         }
     }
 
-    fun setListener(listener: MyFlingListener) {
+    fun setMyFlingListener(listener: MyFlingListener) {
         zoomMyGestureListener.listener = listener
     }
 

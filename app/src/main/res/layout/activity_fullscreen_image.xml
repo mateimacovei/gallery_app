@@ -9,6 +9,25 @@
     tools:context=".activities.FullscreenImageActivity"
     android:orientation="vertical">
 
+<!--    I tried here to use a toolbar, but I couldn't get it to overlay-->
+<!--    <com.google.android.material.appbar.AppBarLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="@null"-->
+<!--        android:theme="@style/Theme.gallery_app.AppBarOverlay"-->
+<!--        android:translationZ="0.1dp"-->
+<!--        app:elevation="0dp">-->
+
+<!--        <androidx.appcompat.widget.Toolbar-->
+<!--            android:id="@+id/fullscreen_toolbar"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="?attr/actionBarSize"-->
+<!--            android:background="@color/transparent"-->
+<!--            android:elevation="4dp"-->
+<!--            app:popupTheme="@style/Theme.gallery_app.PopupOverlay"-->
+<!--            />-->
+<!--    </com.google.android.material.appbar.AppBarLayout>-->
+
     <FrameLayout
         android:id="@+id/frameLayoutZoomImage"
         android:layout_width="match_parent"
@@ -29,8 +48,6 @@
             android:layout_height="match_parent"
             android:animateLayoutChanges="false"
             android:fitsSystemWindows="true">
-
-
             <ImageView
                 android:id="@+id/imageViewPlayButton"
                 android:layout_width="100dp"
@@ -41,7 +58,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@android:drawable/ic_media_play" />
-
             <LinearLayout
                 android:id="@+id/fullscreen_content_controls"
                 style="@style/Widget.Theme.gallery_app.ButtonBar.Fullscreen"
@@ -54,13 +70,11 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 tools:ignore="UselessParent">
-
                 <com.google.android.material.chip.ChipGroup
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
                     app:singleLine="true">
-
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip6"
                         android:layout_width="wrap_content"
@@ -68,7 +82,6 @@
                         android:onClick="leftChipClicked"
                         app:chipIcon="@android:drawable/ic_menu_edit"
                         app:chipSurfaceColor="@android:color/transparent" />
-
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip5"
                         android:layout_width="wrap_content"
@@ -76,7 +89,6 @@
                         android:onClick="middleChipClicked"
                         app:chipIcon="@android:drawable/ic_menu_share"
                         app:chipSurfaceColor="@android:color/transparent" />
-
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip4"
                         android:layout_width="wrap_content"
@@ -89,8 +101,6 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
-
-
 
     <FrameLayout
         android:id="@+id/detail_split_view"
