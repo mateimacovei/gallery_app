@@ -5,19 +5,25 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
+import android.os.Handler
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.*
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
+import com.bumptech.glide.load.resource.bitmap.FitCenter
+import com.bumptech.glide.load.resource.bitmap.TransformationUtils
 import com.bumptech.glide.request.RequestOptions
 import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
 import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
@@ -32,9 +38,9 @@ import com.example.gallery_app.storageAccess.MyPhoto
 import com.example.gallery_app.storageAccess.MyVideo
 import kotlinx.android.synthetic.main.activity_fullscreen_image.*
 import kotlinx.android.synthetic.main.activity_image_detail.*
+import java.nio.charset.Charset
+import java.security.MessageDigest
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.concurrent.thread
 
 
 private const val DEBUG_TAG = "Gestures"
@@ -80,7 +86,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         val gestureDetector = GestureDetector(this, myGestureListener)
         detailsConstraintLayout.setOnTouchListener(View.OnTouchListener(fun(
                 _: View,
-                event: MotionEvent
+                event: MotionEvent,
         ): Boolean {
             Log.i("Gestures", "details OnTouchListener called")
             return gestureDetector.onTouchEvent(event)
@@ -121,33 +127,59 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         startDetailsActivity()
     }
 
+    private val handler = Handler()
+
     private fun loadFullscreenPicture() {
-        fullscreenContent.requestLayout()
         Log.i("Activity", "entered loadFullscreenPicture")
-        val options: RequestOptions = RequestOptions()
-//                .centerCrop()
-                .error(R.mipmap.ic_launcher_round)
         Glide.with(this)
                 .load(myMediaObjectsArray[currentPosition].uri)
-                .apply(options)
+                .error(R.mipmap.ic_launcher_round)
 //                .fitCenter()
                 .into(fullscreenContent)
     }
 
-    private fun loadSplitScreenPicture() {
-//        fullscreenContent.visibility = View.GONE
-//        fullscreenContent.visibility = View.VISIBLE
-        fullscreenContent.invalidate()
-        Log.i("Activity", "entered loadSplitScreenPicture")
-        val options: RequestOptions = RequestOptions()
-                .centerCrop()
-                .error(R.mipmap.ic_launcher_round)
+    inner class MyGlideTransformation : BitmapTransformation() {
+        private val id: String = "com.bumptech.glide.transformations.MyGlideTransformation"
+        private val idBytes: ByteArray = id.toByteArray(Charset.forName("UTF-8"))
+
+        override fun equals(o: Any?): Boolean {
+            return o is MyGlideTransformation
+        }
+
+        override fun hashCode(): Int {
+            return id.hashCode()
+        }
+
+        override fun updateDiskCacheKey(messageDigest: MessageDigest) {
+            messageDigest.update(idBytes);
+        }
+
+        override fun transform(pool: BitmapPool, toTransform: Bitmap, outWidth: Int, outHeight: Int): Bitmap {
+//            Log.i("MyGlideTransformation", "outWidth: $outWidth, outHeight: $outHeight")
+//            Log.i("MyGlideTransformation","original bitmap: width:${toTransform.width}, height: ${toTransform.height}")
+            val centerFitted = TransformationUtils.fitCenter(pool, toTransform, outWidth, outHeight)
+//            Log.i("MyGlideTransformation","centerFitted bitmap: width:${centerFitted.width}, height: ${centerFitted.height}")
+
+            if (centerFitted.height<outHeight)
+                return centerFitted
+            return TransformationUtils.centerCrop(pool, centerFitted, outWidth, outHeight)
+        }
+    }
+
+    private val loadSplitScreenPictureRunnable = Runnable {
+//        Log.i("Activity", "entered loadSplitScreenPictureRunnable")
+//        val options: RequestOptions = RequestOptions()
+//                .error(R.mipmap.ic_launcher_round)
         Glide.with(this)
                 .load(myMediaObjectsArray[currentPosition].uri)
-                .apply(options)
-//                .fitCenter()
+                .transform(MultiTransformation(MyGlideTransformation()))
+//                .apply(options)
+//                .centerCrop()
                 .into(fullscreenContent)
+    }
 
+    private fun loadSplitScreenPicture() {
+        handler.post(loadSplitScreenPictureRunnable)
     }
 
     private fun updateCurrentDisplayedPicture() {
