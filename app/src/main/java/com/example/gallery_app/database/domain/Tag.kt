@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Fts4
 @Entity
 data class Tag(
-    @PrimaryKey(autoGenerate = true) val rowid: Int? = null,
+    @PrimaryKey(autoGenerate = true) val rowid: Long? = null,
     val name: String?
 ){
 

@@ -35,8 +35,6 @@ class MainActivity : AppCompatActivity() {
         requestPermissions()
         // TO DO : request StorageMedia refresh
 
-        val intentAlbumGrid = Intent(this, AlbumGridActivity::class.java)
-        this.startActivityForResult(intentAlbumGrid, 1)
 
 //        thread {
 //            val db = Room.databaseBuilder(
@@ -65,34 +63,26 @@ class MainActivity : AppCompatActivity() {
 //        }
     }
 
+    private fun openAlbumActivity() {
+        val intentAlbumGrid = Intent(this, AlbumGridActivity::class.java)
+        this.startActivityForResult(intentAlbumGrid, 1)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Log.i("Activity","returned from grid activity")
+        Log.i("Activity", "returned from grid activity")
         this.onBackPressed();
     }
 
     private fun requestPermissions() {
-        if (ContextCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                )
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(
                     this,
-                    arrayOf(
-                            Manifest.permission.READ_EXTERNAL_STORAGE,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    ),
-                    PERMS_RETURN
-            )
-        }
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    PERMS_RETURN)
+        else
+            openAlbumActivity()
     }
 
     override fun onRequestPermissionsResult(
@@ -105,7 +95,8 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "File permissions denied!", Toast.LENGTH_LONG).show()
                 finish()
             } else {
-                Toast.makeText(this, "File permissions granted!", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "File permissions granted!", Toast.LENGTH_SHORT).show()
+                openAlbumActivity()
             }
         }
 

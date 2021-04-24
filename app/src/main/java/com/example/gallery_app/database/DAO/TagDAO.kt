@@ -23,4 +23,7 @@ interface TagDAO {
 
     @Delete
     fun delete(user: Tag)
+
+    @Query("DELETE FROM Tag WHERE rowid = (:id)")
+    fun deleteOneById(id: Long)
 }

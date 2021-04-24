@@ -21,7 +21,7 @@ open class ZoomImageView : AppCompatImageView {
     private var last = PointF()
     private var start = PointF()
     var minScale = 1f
-    var maxScale = 6f
+    var maxScale = 60f
     private lateinit var m: FloatArray
     var viewWidth = 0
     var viewHeight = 0

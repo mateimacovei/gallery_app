@@ -168,13 +168,10 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     private val loadSplitScreenPictureRunnable = Runnable {
 //        Log.i("Activity", "entered loadSplitScreenPictureRunnable")
-//        val options: RequestOptions = RequestOptions()
-//                .error(R.mipmap.ic_launcher_round)
         Glide.with(this)
                 .load(myMediaObjectsArray[currentPosition].uri)
                 .transform(MultiTransformation(MyGlideTransformation()))
-//                .apply(options)
-//                .centerCrop()
+                .error(R.mipmap.ic_launcher_round)
                 .into(fullscreenContent)
     }
 
