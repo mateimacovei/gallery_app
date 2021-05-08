@@ -76,10 +76,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED)
+//                    I need write permission for delete
             ActivityCompat.requestPermissions(
                     this,
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
                     PERMS_RETURN)
         else
             openAlbumActivity()
@@ -92,7 +95,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         if (requestCode == PERMS_RETURN) {
             if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                Toast.makeText(this, "File permissions denied!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Storage permissions denied!", Toast.LENGTH_LONG).show()
                 finish()
             } else {
 //                Toast.makeText(this, "File permissions granted!", Toast.LENGTH_SHORT).show()

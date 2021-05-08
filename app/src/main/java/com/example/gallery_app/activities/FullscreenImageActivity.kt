@@ -19,12 +19,9 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
-import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.TransformationUtils
-import com.bumptech.glide.request.RequestOptions
 import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
 import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
 import com.example.gallery_app.IMAGE_DETAILS
@@ -34,8 +31,6 @@ import com.example.gallery_app.adapter.gestureListeners.MyFlingListener
 import com.example.gallery_app.adapter.gestureListeners.MyGestureListener
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyMediaObject
-import com.example.gallery_app.storageAccess.MyPhoto
-import com.example.gallery_app.storageAccess.MyVideo
 import kotlinx.android.synthetic.main.activity_fullscreen_image.*
 import kotlinx.android.synthetic.main.activity_image_detail.*
 import java.nio.charset.Charset
@@ -127,6 +122,8 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         startDetailsActivity()
     }
 
+
+
     private val handler = Handler()
 
     private fun loadFullscreenPicture() {
@@ -155,7 +152,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         }
 
         override fun transform(pool: BitmapPool, toTransform: Bitmap, outWidth: Int, outHeight: Int): Bitmap {
-//            Log.i("MyGlideTransformation", "outWidth: $outWidth, outHeight: $outHeight")
+            Log.i("MyGlideTransformation", "outWidth: $outWidth, outHeight: $outHeight")
 //            Log.i("MyGlideTransformation","original bitmap: width:${toTransform.width}, height: ${toTransform.height}")
             val centerFitted = TransformationUtils.fitCenter(pool, toTransform, outWidth, outHeight)
 //            Log.i("MyGlideTransformation","centerFitted bitmap: width:${centerFitted.width}, height: ${centerFitted.height}")
@@ -170,7 +167,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 //        Log.i("Activity", "entered loadSplitScreenPictureRunnable")
         Glide.with(this)
                 .load(myMediaObjectsArray[currentPosition].uri)
-                .transform(MultiTransformation(MyGlideTransformation()))
+                .transform(MyGlideTransformation())
                 .error(R.mipmap.ic_launcher_round)
                 .into(fullscreenContent)
     }
@@ -184,7 +181,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 //        this.title = myPhotoArray[currentPosition].name
         title = ""
 
-        if (myMediaObjectsArray[currentPosition] is MyVideo)
+        if (myMediaObjectsArray[currentPosition].isVideo)
             imageViewPlayButton.visibility = View.VISIBLE
         else
             imageViewPlayButton.visibility = View.GONE
@@ -324,19 +321,37 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         hideControls()
     }
 
+    private fun openWith(){
+        val uri = myMediaObjectsArray[currentPosition].uri
+        val openIntent = Intent(Intent.ACTION_VIEW)
+
+        if (!myMediaObjectsArray[currentPosition].isVideo)
+            openIntent.setDataAndType(uri, "image/*")
+        else
+            openIntent.setDataAndType(uri, "video/*")
+
+        openIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+//        startActivity(openIntent)
+        startActivity(Intent.createChooser(openIntent, "Open with"))
+    }
+
+    fun openWithMenuButtonClicked(item: MenuItem) {
+        openWith()
+    }
+
     fun leftChipClicked(view: View) {
         val uri = myMediaObjectsArray[currentPosition].uri
 
         val editIntent = Intent(Intent.ACTION_EDIT)
 
-        if (myMediaObjectsArray[currentPosition] is MyPhoto)
-//            editIntent.setDataAndType(uri, "image/*")
-            editIntent.type = "image/*"
+        if (!myMediaObjectsArray[currentPosition].isVideo)
+            editIntent.setDataAndType(uri, "image/*")
+//            editIntent.type = "image/*"
         else
-//            editIntent.setDataAndType(uri, "video/*")
-            editIntent.type = "video/*"
+            editIntent.setDataAndType(uri, "video/*")
+//            editIntent.type = "video/*"
 
-        editIntent.putExtra(Intent.EXTRA_STREAM, uri)
+//        editIntent.putExtra(Intent.EXTRA_STREAM, uri)
         editIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         startActivity(Intent.createChooser(editIntent, null))
     }
@@ -345,7 +360,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         val uri = myMediaObjectsArray[currentPosition].uri
 
         val sharingIntent = Intent(Intent.ACTION_SEND)
-        if (myMediaObjectsArray[currentPosition] is MyPhoto)
+        if (!myMediaObjectsArray[currentPosition].isVideo)
             sharingIntent.type = "image/*"
         else
             sharingIntent.type = "video/*"
@@ -356,7 +371,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     }
 
     fun deleteChipClicked(view: View) {
-        contentResolver.delete(myMediaObjectsArray[currentPosition].uri, null, null)
+        myMediaObjectsArray[currentPosition].uri?.let { contentResolver.delete(it, null, null) }
         if (myMediaObjectsArray.size == 1)
             onBackPressed()
         myMediaObjectsArray.removeAt(currentPosition)
@@ -367,12 +382,6 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     }
 
     fun imagePlayButtonClicked(view: View) {
-        val uri = myMediaObjectsArray[currentPosition].uri
-        val playIntent = Intent(Intent.ACTION_VIEW)
-//        playIntent.type = "video/*"
-//        playIntent.putExtra(Intent.EXTRA_STREAM, uri)
-//        startActivity(Intent.createChooser(playIntent, "Play video using"))
-        playIntent.setDataAndType(uri, "video/*");
-        startActivity(playIntent);
+        openWith()
     }
 }

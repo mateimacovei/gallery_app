@@ -12,7 +12,6 @@ class StaticMethods {
     companion object {
         private val projectionImages = arrayOf(
                 MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.RELATIVE_PATH,
                 MediaStore.Images.Media.DATE_MODIFIED,
                 MediaStore.Images.Media.SIZE,
                 MediaStore.Images.Media.WIDTH,
@@ -22,7 +21,6 @@ class StaticMethods {
 
         private val projectionVideos = arrayOf(
                 MediaStore.Video.Media._ID,
-                MediaStore.Video.Media.RELATIVE_PATH,
                 MediaStore.Video.Media.DATE_MODIFIED,
                 MediaStore.Video.Media.SIZE,
                 MediaStore.Video.Media.WIDTH,
@@ -230,8 +228,6 @@ class StaticMethods {
 
             val actualImageColumnIndex__ID: Int =
                     cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-            val actualImageColumnIndexRELATIVE_PATH: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH)
             val actualImageColumnIndexDATE_MODIFIED: Int =
                     cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED)
             val actualImageColumnIndexSIZE: Int =
@@ -254,8 +250,6 @@ class StaticMethods {
 
                 val data: String? =
                         actualImageColumnIndexDATA.let { cursor.getString(it) }
-                val relativePath: String? =
-                        actualImageColumnIndexRELATIVE_PATH.let { cursor.getString(it) }
                 val dateModified: String? =
                         actualImageColumnIndexDATE_MODIFIED.let { cursor.getString(it) }
                 val size: String? = actualImageColumnIndexSIZE.let { cursor.getString(it) }
@@ -264,10 +258,10 @@ class StaticMethods {
 
 
                 if (data != null) {
-                    pictures[data] = MyPhoto(
+                    pictures[data] = MyMediaObject(
+                            uriId = id,
                             uri = uri,
                             DATA = data,
-                            RELATIVE_PATH = relativePath,
                             DATE_MODIFIED = dateModified,
                             SIZE = size,
                             WIDTH = width,
@@ -288,8 +282,6 @@ class StaticMethods {
 
             val actualVideoColumnIndex__ID: Int =
                     cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
-            val actualVideoColumnIndexRELATIVE_PATH: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Video.Media.RELATIVE_PATH)
             val actualVideoColumnIndexDATE_MODIFIED: Int =
                     cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_MODIFIED)
             val actualVideoColumnIndexSIZE: Int =
@@ -312,8 +304,6 @@ class StaticMethods {
 
                 val data: String? =
                         actualVideoColumnIndexDATA.let { cursor.getString(it) }
-                val relativePath: String? =
-                        actualVideoColumnIndexRELATIVE_PATH.let { cursor.getString(it) }
                 val dateModified: String? =
                         actualVideoColumnIndexDATE_MODIFIED.let { cursor.getString(it) }
                 val size: String? = actualVideoColumnIndexSIZE.let { cursor.getString(it) }
@@ -322,14 +312,15 @@ class StaticMethods {
 
 
                 if (data != null) {
-                    videos[data] = MyVideo(
+                    videos[data] = MyMediaObject(
+                            uriId = id,
                             uri = uri,
                             DATA = data,
-                            RELATIVE_PATH = relativePath,
                             DATE_MODIFIED = dateModified,
                             SIZE = size,
                             WIDTH = width,
-                            HEIGHT = height)
+                            HEIGHT = height,
+                            isVideo = true)
                 } else
                     Log.w("Files", "load failed : failed null-check in getAllPictures(): data: $data | uri:$uri")
             }

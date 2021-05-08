@@ -2,6 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group >
         <item
+            android:onClick="openWithMenuButtonClicked"
+            android:title="Open with" />
+        <item
             android:onClick="detailsMenuButtonClicked"
             android:title="Details" />
     </group>
