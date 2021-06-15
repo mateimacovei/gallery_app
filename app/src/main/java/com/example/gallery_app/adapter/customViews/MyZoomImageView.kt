@@ -1,19 +1,21 @@
 package com.example.gallery_app.adapter.customViews
 
 import android.content.Context
+import android.graphics.Matrix
 import android.graphics.PointF
 import android.util.AttributeSet
 import android.util.Log
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
+import android.view.ViewConfiguration
 import androidx.appcompat.widget.AppCompatImageView
-import android.graphics.Matrix
-import android.view.GestureDetector
 import com.example.gallery_app.adapter.gestureListeners.MyFlingListener
 import com.example.gallery_app.adapter.gestureListeners.MyGestureListener
 import kotlin.math.abs
 
-open class ZoomImageView : AppCompatImageView {
+
+open class MyZoomImageView : AppCompatImageView {
     var matri: Matrix? = null
     var mode = NONE
 
@@ -106,30 +108,49 @@ open class ZoomImageView : AppCompatImageView {
         }
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            var mScaleFactor = detector.scaleFactor
-            val origScale = saveScale
-            saveScale *= mScaleFactor
-            isFullscreen = false
-            if (saveScale > maxScale) {
-                saveScale = maxScale
-                mScaleFactor = maxScale / origScale
-            } else if (saveScale < minScale) {
-                isFullscreen = true
-                saveScale = minScale
-                mScaleFactor = minScale / origScale
-            }
-            if (origWidth * saveScale <= viewWidth || origHeight * saveScale <= viewHeight) matri!!.postScale(mScaleFactor, mScaleFactor, viewWidth / 2.toFloat(), viewHeight / 2.toFloat()) else matri!!.postScale(mScaleFactor, mScaleFactor, detector.focusX, detector.focusY)
-            fixTrans()
-            return true
+            return scale(detector.scaleFactor, detector.focusX,detector.focusY)
         }
     }
 
+    private fun scale(mScaleFactorr: Float, focusX: Float, focusY: Float): Boolean{
+//        Log.i("Gestures","resize: ${mScaleFactorr}, ${focusX},${focusY}")
+        var mScaleFactor = mScaleFactorr
+        val origScale = saveScale
+        saveScale *= mScaleFactor
+        isFullscreen = false
+        if (saveScale > maxScale) {
+            saveScale = maxScale
+            mScaleFactor = maxScale / origScale
+        } else if (saveScale < minScale) {
+            isFullscreen = true
+            saveScale = minScale
+            mScaleFactor = minScale / origScale
+        }
+        if (origWidth * saveScale <= viewWidth || origHeight * saveScale <= viewHeight) matri!!.postScale(mScaleFactor, mScaleFactor, viewWidth / 2.toFloat(), viewHeight / 2.toFloat()) else matri!!.postScale(mScaleFactor, mScaleFactor, focusX, focusY)
+        fixTrans()
+        return true
+    }
+
     inner class ZoomMyGestureListener() : MyGestureListener() {
+        private val timeOut = ViewConfiguration.getDoubleTapTimeout()
+        private var lastTapTime: Long = 0
+
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
             Log.i("Gestures", "onFling called, isFullscreen= $isFullscreen")
             if (isFullscreen)
                 super.onFling(e1, e2, velocityX, velocityY)
             return true
+        }
+
+        override fun onSingleTapUp(e: MotionEvent?): Boolean {
+            val tapTime = System.currentTimeMillis()
+            if(tapTime - lastTapTime<timeOut){
+                Log.i("Gestures", "double tap")
+                return false
+            }
+            else
+                lastTapTime=tapTime
+            return false
         }
     }
 

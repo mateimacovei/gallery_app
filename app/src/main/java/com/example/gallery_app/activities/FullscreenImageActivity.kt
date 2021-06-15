@@ -11,6 +11,7 @@ import android.graphics.drawable.ColorDrawable
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
@@ -26,7 +27,7 @@ import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
 import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
 import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
-import com.example.gallery_app.adapter.customViews.ZoomImageView
+import com.example.gallery_app.adapter.customViews.MyZoomImageView
 import com.example.gallery_app.adapter.gestureListeners.MyFlingListener
 import com.example.gallery_app.adapter.gestureListeners.MyGestureListener
 import com.example.gallery_app.storageAccess.Box
@@ -46,7 +47,7 @@ private const val DEBUG_TAG = "Gestures"
  */
 @Suppress("DEPRECATION")
 class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
-    private lateinit var fullscreenContent: ZoomImageView
+    private lateinit var fullscreenContent: MyZoomImageView
     private lateinit var fullscreenContentControls: LinearLayout
     private var isFullscreen: Boolean = true
 
@@ -124,7 +125,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
 
 
-    private val handler = Handler()
+    private val handler = Handler(Looper.getMainLooper())
 
     private fun loadFullscreenPicture() {
         Log.i("Activity", "entered loadFullscreenPicture")
@@ -339,24 +340,21 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         openWith()
     }
 
-    fun leftChipClicked(view: View) {
+    fun editChipClicked(view: View) {
         val uri = myMediaObjectsArray[currentPosition].uri
 
         val editIntent = Intent(Intent.ACTION_EDIT)
 
         if (!myMediaObjectsArray[currentPosition].isVideo)
             editIntent.setDataAndType(uri, "image/*")
-//            editIntent.type = "image/*"
         else
             editIntent.setDataAndType(uri, "video/*")
-//            editIntent.type = "video/*"
 
-//        editIntent.putExtra(Intent.EXTRA_STREAM, uri)
         editIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         startActivity(Intent.createChooser(editIntent, null))
     }
 
-    fun middleChipClicked(view: View) {
+    fun shareChipClicked(view: View) {
         val uri = myMediaObjectsArray[currentPosition].uri
 
         val sharingIntent = Intent(Intent.ACTION_SEND)

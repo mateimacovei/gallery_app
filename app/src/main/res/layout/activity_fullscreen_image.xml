@@ -36,7 +36,7 @@
         android:layout_weight="2">
 
 
-        <com.example.gallery_app.adapter.customViews.ZoomImageView
+        <com.example.gallery_app.adapter.customViews.MyZoomImageView
             android:id="@+id/fullscreen_ImageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -80,14 +80,14 @@
                         android:id="@+id/chip6"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:onClick="leftChipClicked"
+                        android:onClick="editChipClicked"
                         app:chipIcon="@android:drawable/ic_menu_edit"
                         app:chipSurfaceColor="@android:color/transparent" />
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip5"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:onClick="middleChipClicked"
+                        android:onClick="shareChipClicked"
                         app:chipIcon="@android:drawable/ic_menu_share"
                         app:chipSurfaceColor="@android:color/transparent" />
                     <com.google.android.material.chip.Chip
