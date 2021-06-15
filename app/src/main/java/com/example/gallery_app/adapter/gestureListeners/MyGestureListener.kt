@@ -5,7 +5,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import kotlin.math.abs
 
-const val VELOCITY_THRESHOLD: Long = 100
+const val VELOCITY_THRESHOLD: Long = 200
 //TO DO: adjust this
 
 open class MyGestureListener(var listener : MyFlingListener? = null) : GestureDetector.OnGestureListener {

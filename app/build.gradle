@@ -61,6 +61,7 @@ dependencies {
 
 //    found at https://stackoverflow.com/a/58074642/12334317 , not working
 //    implementation 'com.jsibbold:zoomage:1.2.0'
+    implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
 
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'

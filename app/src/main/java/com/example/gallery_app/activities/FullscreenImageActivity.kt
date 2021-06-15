@@ -4,30 +4,28 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.icu.text.SimpleDateFormat
+import android.media.MediaMetadataRetriever
+import android.media.ThumbnailUtils
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.*
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import com.bumptech.glide.load.resource.bitmap.TransformationUtils
+import com.davemorrissey.labs.subscaleview.ImageSource
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
 import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
 import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
-import com.example.gallery_app.adapter.customViews.MyZoomImageView
 import com.example.gallery_app.adapter.gestureListeners.MyFlingListener
 import com.example.gallery_app.adapter.gestureListeners.MyGestureListener
 import com.example.gallery_app.storageAccess.Box
@@ -39,7 +37,7 @@ import java.security.MessageDigest
 import java.util.*
 
 
-private const val DEBUG_TAG = "Gestures"
+private const val DEBUG_TAG_GESTURES = "Gestures"
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -47,7 +45,7 @@ private const val DEBUG_TAG = "Gestures"
  */
 @Suppress("DEPRECATION")
 class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
-    private lateinit var fullscreenContent: MyZoomImageView
+    private lateinit var fullscreenContent: SubsamplingScaleImageView
     private lateinit var fullscreenContentControls: LinearLayout
     private var isFullscreen: Boolean = true
 
@@ -62,8 +60,16 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         setContentView(R.layout.activity_fullscreen_image)
 //        setSupportActionBar(fullscreen_toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.transparent, theme)))
+        supportActionBar?.setBackgroundDrawable(
+            ColorDrawable(
+                resources.getColor(
+                    R.color.transparent,
+                    theme
+                )
+            )
+        )
         detail_split_view.visibility = View.GONE
+        fullscreenContentControls = findViewById(R.id.fullscreen_content_controls)
 
         frameLayoutZoomImage.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -72,20 +78,40 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
         // Set up the user interaction to manually show or hide the system UI.
         fullscreenContent = findViewById(R.id.fullscreen_ImageView)
+        //astea sunt pt  MyZoomImageView
+//        fullscreenContent.setOnClickListener { toggle() }
+//        fullscreenContent.setMyFlingListener(this)
+        fullscreenContent.maxScale = 5000.0F
         fullscreenContent.setOnClickListener { toggle() }
-        fullscreenContent.setMyFlingListener(this)
-        fullscreenContentControls = findViewById(R.id.fullscreen_content_controls)
+
+
+        val gestureDetector = GestureDetector(this, object : MyGestureListener(this) {
+            override fun onFling(
+                e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float
+            ): Boolean {
+                if (fullscreenContent.scale - fullscreenContent.minScale < 0.001F )
+                    return super.onFling(e1, e2, velocityX, velocityY)
+                return false
+            }
+        })
+        fullscreenContent.setOnTouchListener(View.OnTouchListener(fun(
+            _: View,
+            event: MotionEvent,
+        ): Boolean {
+            gestureDetector.onTouchEvent(event)
+            return false
+        }))
+
 
         detailsConstraintLayout.setOnClickListener {}
         //FUN FACT: if I don't set a separate onClickListener, it will never reach fling
-        val myGestureListener = MyGestureListener(this)
-        val gestureDetector = GestureDetector(this, myGestureListener)
+        val gestureDetector2 = GestureDetector(this, MyGestureListener(this))
         detailsConstraintLayout.setOnTouchListener(View.OnTouchListener(fun(
-                _: View,
-                event: MotionEvent,
+            _: View,
+            event: MotionEvent,
         ): Boolean {
-            Log.i("Gestures", "details OnTouchListener called")
-            return gestureDetector.onTouchEvent(event)
+            Log.i("Gestures", "details fragment OnTouchListener called")
+            return gestureDetector2.onTouchEvent(event)
         }))
 
         myMediaObjectsArray = Box.Get(intent, FULLSCREEN_IMAGE_ARRAY)
@@ -117,11 +143,21 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     private fun loadFullscreenPicture() {
         Log.i("Activity", "entered loadFullscreenPicture")
-        Glide.with(this)
-                .load(myMediaObjectsArray[currentPosition].uri)
-                .error(R.mipmap.ic_launcher_round)
-//                .fitCenter()
-                .into(fullscreenContent)
+        if (!myMediaObjectsArray[currentPosition].isVideo) {
+            myMediaObjectsArray[currentPosition].uri?.let {
+                ImageSource.uri(it)
+            }?.let { fullscreenContent.setImage(it) }
+        } else {
+            val mediaMetadataRetriever = MediaMetadataRetriever()
+            mediaMetadataRetriever.setDataSource(this, myMediaObjectsArray[currentPosition].uri)
+            val bmFrame = mediaMetadataRetriever.frameAtTime
+            bmFrame?.let { ImageSource.bitmap(it) }?.let { fullscreenContent.setImage(it) }
+        }
+//        Glide.with(this)
+//                .load(myMediaObjectsArray[currentPosition].uri)
+//                .error(R.mipmap.ic_launcher_round)
+////                .fitCenter()
+//                .into(fullscreenContent)
     }
 
     inner class MyGlideTransformation : BitmapTransformation() {
@@ -140,25 +176,40 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             messageDigest.update(idBytes);
         }
 
-        override fun transform(pool: BitmapPool, toTransform: Bitmap, outWidth: Int, outHeight: Int): Bitmap {
+        override fun transform(
+            pool: BitmapPool,
+            toTransform: Bitmap,
+            outWidth: Int,
+            outHeight: Int
+        ): Bitmap {
             Log.i("MyGlideTransformation", "outWidth: $outWidth, outHeight: $outHeight")
 //            Log.i("MyGlideTransformation","original bitmap: width:${toTransform.width}, height: ${toTransform.height}")
             val centerFitted = TransformationUtils.fitCenter(pool, toTransform, outWidth, outHeight)
 //            Log.i("MyGlideTransformation","centerFitted bitmap: width:${centerFitted.width}, height: ${centerFitted.height}")
 
-            if (centerFitted.height<outHeight)
+            if (centerFitted.height < outHeight)
                 return centerFitted
             return TransformationUtils.centerCrop(pool, centerFitted, outWidth, outHeight)
         }
     }
 
     private val loadSplitScreenPictureRunnable = Runnable {
-//        Log.i("Activity", "entered loadSplitScreenPictureRunnable")
-        Glide.with(this)
-                .load(myMediaObjectsArray[currentPosition].uri)
-                .transform(MyGlideTransformation())
-                .error(R.mipmap.ic_launcher_round)
-                .into(fullscreenContent)
+        Log.i("Activity", "entered loadSplitScreenPictureRunnable")
+        if (!myMediaObjectsArray[currentPosition].isVideo) {
+            myMediaObjectsArray[currentPosition].uri?.let {
+                ImageSource.uri(it)
+            }?.let { fullscreenContent.setImage(it) }
+        } else {
+            val mediaMetadataRetriever = MediaMetadataRetriever()
+            mediaMetadataRetriever.setDataSource(this, myMediaObjectsArray[currentPosition].uri)
+            val bmFrame = mediaMetadataRetriever.frameAtTime
+            bmFrame?.let { ImageSource.bitmap(it) }?.let { fullscreenContent.setImage(it) }
+        }
+//        Glide.with(this)
+//                .load(myMediaObjectsArray[currentPosition].uri)
+//                .transform(MyGlideTransformation())
+//                .error(R.mipmap.ic_launcher_round)
+//                .into(fullscreenContent)
     }
 
     private fun loadSplitScreenPicture() {
@@ -183,6 +234,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     private fun toggle() {
         Log.i("Activity", "toggle entry, isFullscreen:$isFullscreen")
+        Log.i("ZOOM","scale: ${fullscreenContent.scale}; minScale:${fullscreenContent.minScale}")
         if (!inSplitView)
             if (isFullscreen)
                 showControls()
@@ -223,7 +275,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
      * goes to the next image
      */
     override fun swipeLeft() {
-        if (currentPosition < myMediaObjectsArray.size - 1) {
+        if (currentPosition < myMediaObjectsArray.size - 1 && !inSplitView) {
             currentPosition++
             updateCurrentDisplayedPicture()
         }
@@ -233,7 +285,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
      * goes to the previous image
      */
     override fun swipeRight() {
-        if (currentPosition > 0) {
+        if (currentPosition > 0 && !inSplitView) {
             currentPosition--
             updateCurrentDisplayedPicture()
         }
@@ -242,7 +294,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     private fun updateDetails() {
         val mediaObject = myMediaObjectsArray[currentPosition]
         textViewDate.text = SimpleDateFormat("dd MMMM yyyy").format(
-                mediaObject.DATE_MODIFIED?.toLong()?.times(1000)?.let { Date(it) })
+            mediaObject.DATE_MODIFIED?.toLong()?.times(1000)?.let { Date(it) })
 
         if (mediaObject.name.length <= 30)
             textViewTitle.text = mediaObject.name
@@ -270,7 +322,8 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
         chipCopyNameToClipboard.setOnClickListener {
             Toast.makeText(this, "Name copied to clipboard", Toast.LENGTH_SHORT).show()
-            val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val clipboard: ClipboardManager =
+                getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
             val clip: ClipData = ClipData.newPlainText(mediaObject.name, mediaObject.name)
             clipboard.setPrimaryClip(clip)
         }
@@ -310,7 +363,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         hideControls()
     }
 
-    private fun openWith(){
+    private fun openWith() {
         val uri = myMediaObjectsArray[currentPosition].uri
         val openIntent = Intent(Intent.ACTION_VIEW)
 
