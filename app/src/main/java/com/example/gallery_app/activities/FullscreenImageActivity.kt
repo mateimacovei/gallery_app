@@ -105,24 +105,12 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.fullscreen_menu, menu)
-        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
-            Configuration.UI_MODE_NIGHT_YES ->
-                for (i in 0 until menu!!.size()) {
-                    val item = menu.getItem(i)
-                    val spanString = SpannableString(menu.getItem(i).title.toString())
-                    spanString.setSpan(ForegroundColorSpan(Color.WHITE), 0, spanString.length, 0) //fix the color to white
-                    item.title = spanString
-                }
-            Configuration.UI_MODE_NIGHT_NO -> {
-            }
-        }
         return true
     }
 
     fun detailsMenuButtonClicked(item: MenuItem) {
         startDetailsActivity()
     }
-
 
 
     private val handler = Handler(Looper.getMainLooper())

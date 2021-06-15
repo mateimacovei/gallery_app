@@ -4,8 +4,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -14,6 +12,7 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gallery_app.*
 import com.example.gallery_app.adapter.AbstractMediaObjectHolder
@@ -23,6 +22,7 @@ import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhoto
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
+
 
 class ImageGridActivity : AbstractGridActivity() {
     val holderImages: ArrayList<AbstractMediaObjectHolder> = ArrayList()
@@ -214,9 +214,9 @@ class ImageGridActivity : AbstractGridActivity() {
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onItemClick(
-        view: View,
-        position: Int,
-        colorViewHolder: AbstractMediaObjectHolder,
+            view: View,
+            position: Int,
+            colorViewHolder: AbstractMediaObjectHolder,
     ) {
         if (view is ImageButton) { //important to check ImageButton first, as ImageButton extends ImageView
             startFullscreenActivity(colorViewHolder)
@@ -233,9 +233,9 @@ class ImageGridActivity : AbstractGridActivity() {
      * "view" helps determine which element within the "colorViewHolder" was clicked
      */
     override fun onLongItemClick(
-        view: View,
-        position: Int,
-        colorViewHolder: AbstractMediaObjectHolder,
+            view: View,
+            position: Int,
+            colorViewHolder: AbstractMediaObjectHolder,
     ) {
 //        Toast.makeText(this, "Image LONG clicked $position", Toast.LENGTH_SHORT).show()
         if (!selectionMode) {
@@ -262,17 +262,6 @@ class ImageGridActivity : AbstractGridActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.image_grid_layout_menu, menu)
-        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
-            Configuration.UI_MODE_NIGHT_YES ->
-                for (i in 0 until menu!!.size()) {
-                    val item = menu.getItem(i)
-                    val spanString = SpannableString(menu.getItem(i).title.toString())
-                    spanString.setSpan(ForegroundColorSpan(Color.WHITE), 0, spanString.length, 0) //fix the color to white
-                    item.title = spanString
-                }
-            Configuration.UI_MODE_NIGHT_NO -> {
-            }
-        }
         return true
     }
 
@@ -306,7 +295,7 @@ class ImageGridActivity : AbstractGridActivity() {
             SortOrder.ASC -> ascendingRadioButton.isChecked = true
         }
 
-        MaterialAlertDialogBuilder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
                 .setView(customAlertDialogView)
                 .setTitle("Sort by")
                 .setNegativeButton("Cancel") { _, _ ->
@@ -334,11 +323,21 @@ class ImageGridActivity : AbstractGridActivity() {
                     }
 
                     if (oldSortBy != sortBy || oldSortOrder != sortOrder) {
-                        PreferencesFileHandler.updateSort(this,sortBy,sortOrder)
+                        PreferencesFileHandler.updateSort(this, sortBy, sortOrder)
                         loadPicturesFromAlbum(force = true)
                     }
                 }
-                .show()
+                .create()
+
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_YES -> {
+                dialog.setOnShowListener {
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                }
+            }
+        }
+        dialog.show()
     }
 
     fun gridSizeMenuButtonClicked(item: MenuItem) {
@@ -359,7 +358,7 @@ class ImageGridActivity : AbstractGridActivity() {
             GridSize.S4 -> radioButton4.isChecked = true
         }
 
-        MaterialAlertDialogBuilder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
                 .setView(customAlertDialogView)
                 .setTitle("Resize grid")
                 .setNegativeButton("Cancel") { _, _ ->
@@ -380,7 +379,7 @@ class ImageGridActivity : AbstractGridActivity() {
                     }
 
                     if (oldGridSize != gridSize) {
-                        PreferencesFileHandler.updateGridSize(this,gridSize)
+                        PreferencesFileHandler.updateGridSize(this, gridSize)
                         this.onConfigurationChanged(this.resources.configuration)
 
                         if (shouldShowFullscreenIcon(oldGridSize) != shouldShowFullscreenIcon(gridSize) && selectionMode && holderImages[0] is ImageGridAdapter.ImageColorViewHolder) {
@@ -397,7 +396,17 @@ class ImageGridActivity : AbstractGridActivity() {
                         }
                     }
                 }
-                .show()
+                .create()
+
+        when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_YES -> {
+                dialog.setOnShowListener {
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE)
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                }
+            }
+        }
+        dialog.show()
     }
 
     fun goodImageGridSearchClicked(v: View) {
