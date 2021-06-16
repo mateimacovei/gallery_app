@@ -1,4 +1,4 @@
-package com.example.gallery_app.adapter.gestureListeners
+package com.example.gallery_app.uiClasses.gestureListeners
 
 import android.util.Log
 import android.view.GestureDetector

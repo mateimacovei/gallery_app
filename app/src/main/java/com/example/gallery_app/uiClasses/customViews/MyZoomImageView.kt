@@ -1,4 +1,4 @@
-package com.example.gallery_app.adapter.customViews
+package com.example.gallery_app.uiClasses.customViews
 
 import android.content.Context
 import android.graphics.Matrix
@@ -10,8 +10,8 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ViewConfiguration
 import androidx.appcompat.widget.AppCompatImageView
-import com.example.gallery_app.adapter.gestureListeners.MyFlingListener
-import com.example.gallery_app.adapter.gestureListeners.MyGestureListener
+import com.example.gallery_app.uiClasses.gestureListeners.MyFlingListener
+import com.example.gallery_app.uiClasses.gestureListeners.MyGestureListener
 import kotlin.math.abs
 
 

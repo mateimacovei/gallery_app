@@ -1,4 +1,4 @@
-package com.example.gallery_app.adapter
+package com.example.gallery_app.uiClasses
 
 import android.util.Log
 import android.view.View

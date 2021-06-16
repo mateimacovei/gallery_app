@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.graphics.drawable.ColorDrawable
 import android.icu.text.SimpleDateFormat
 import android.media.MediaMetadataRetriever
-import android.media.ThumbnailUtils
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -26,8 +25,8 @@ import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
 import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
 import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
-import com.example.gallery_app.adapter.gestureListeners.MyFlingListener
-import com.example.gallery_app.adapter.gestureListeners.MyGestureListener
+import com.example.gallery_app.uiClasses.gestureListeners.MyFlingListener
+import com.example.gallery_app.uiClasses.gestureListeners.MyGestureListener
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyMediaObject
 import kotlinx.android.synthetic.main.activity_fullscreen_image.*
@@ -35,9 +34,19 @@ import kotlinx.android.synthetic.main.activity_image_detail.*
 import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.util.*
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.Glide
+import com.example.gallery_app.uiClasses.customViews.MyZoomImageView
 
 
 private const val DEBUG_TAG_GESTURES = "Gestures"
+private const val KEY_Small_MY_MEDIA_OBJECT = "gallery.FullscreenImageActivity.fragments.smallMediaObject"
+
+
+
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -45,13 +54,92 @@ private const val DEBUG_TAG_GESTURES = "Gestures"
  */
 @Suppress("DEPRECATION")
 class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
-    private lateinit var fullscreenContent: SubsamplingScaleImageView
+//    private lateinit var fullscreenContent: SubsamplingScaleImageView
+    private lateinit var viewPager: ViewPager2
     private lateinit var fullscreenContentControls: LinearLayout
     private var isFullscreen: Boolean = true
 
     private lateinit var myMediaObjectsArray: ArrayList<MyMediaObject>
     private var currentPosition: Int = 0
     private var inSplitView = false
+
+
+    class SubsamplingImagePageFragment : Fragment() {
+        lateinit var mediaObject: MyMediaObject
+
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View {
+            val view = inflater.inflate(R.layout.item_subsampling_image, container, false)
+            val fullscreenContent: SubsamplingScaleImageView =
+                view.findViewById(R.id.fullscreen_ImageView)
+            if (!mediaObject.isVideo) {
+                mediaObject.uri?.let {
+                    ImageSource.uri(it)
+                }?.let { fullscreenContent.setImage(it) }
+            } else {
+                val mediaMetadataRetriever = MediaMetadataRetriever()
+                mediaMetadataRetriever.setDataSource(context, mediaObject.uri)
+                val bmFrame = mediaMetadataRetriever.frameAtTime
+                bmFrame?.let { ImageSource.bitmap(it) }?.let {  fullscreenContent.setImage(it) }
+            }
+            return view
+        }
+
+//        companion object {
+//            fun create(mediaObject: MyMediaObject) =
+//                SubsamplingImagePageFragment().apply {
+//                    arguments = Bundle(1).apply {
+//                        putStringArrayList(KEY_Small_MY_MEDIA_OBJECT, mediaObject.toStringArrayListForSmallMyMediaObj())
+//                    }
+//                }
+//        }
+    }
+
+    class ZoomImagePageFragment : Fragment() {
+        lateinit var mediaObject: MyMediaObject
+
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View {
+            val view = inflater.inflate(R.layout.item_zoom_image, container, false)
+            val fullscreenContent: MyZoomImageView =
+                view.findViewById(R.id.fullscreen_ImageView)
+
+            Glide.with(this)
+                .load(mediaObject.uri)
+                .error(R.mipmap.ic_launcher_round)
+//                .fitCenter()
+                .into(fullscreenContent)
+
+            return view
+        }
+    }
+
+    inner class ScreenSlidePagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+        override fun getItemCount(): Int {
+            return myMediaObjectsArray.size
+        }
+
+        override fun createFragment(position: Int): Fragment {
+            if (myMediaObjectsArray[position].getExtension().contentEquals("gif")) {
+                val fragment = ZoomImagePageFragment()
+                fragment.mediaObject = myMediaObjectsArray[position]
+                return fragment
+            }
+            else {
+                val fragment = SubsamplingImagePageFragment()
+                fragment.mediaObject = myMediaObjectsArray[position]
+                return fragment
+            }
+
+        }
+
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,6 +156,10 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
                 )
             )
         )
+        myMediaObjectsArray = Box.Get(intent, FULLSCREEN_IMAGE_ARRAY)
+        currentPosition = Box.Get(intent, FULLSCREEN_IMAGE_POSITION)
+        Box.Remove(intent)
+
         detail_split_view.visibility = View.GONE
         fullscreenContentControls = findViewById(R.id.fullscreen_content_controls)
 
@@ -77,30 +169,36 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         isFullscreen = true
 
         // Set up the user interaction to manually show or hide the system UI.
-        fullscreenContent = findViewById(R.id.fullscreen_ImageView)
+//        fullscreenContent = findViewById(R.id.fullscreen_ImageView)
         //astea sunt pt  MyZoomImageView
 //        fullscreenContent.setOnClickListener { toggle() }
 //        fullscreenContent.setMyFlingListener(this)
-        fullscreenContent.maxScale = 5000.0F
-        fullscreenContent.setOnClickListener { toggle() }
+//        fullscreenContent.maxScale = 5000.0F
+//        fullscreenContent.setOnClickListener { toggle() }
 
 
-        val gestureDetector = GestureDetector(this, object : MyGestureListener(this) {
-            override fun onFling(
-                e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float
-            ): Boolean {
-                if (fullscreenContent.scale - fullscreenContent.minScale < 0.001F )
-                    return super.onFling(e1, e2, velocityX, velocityY)
-                return false
-            }
-        })
-        fullscreenContent.setOnTouchListener(View.OnTouchListener(fun(
-            _: View,
-            event: MotionEvent,
-        ): Boolean {
-            gestureDetector.onTouchEvent(event)
-            return false
-        }))
+//        val gestureDetector = GestureDetector(this, object : MyGestureListener(this) {
+//            override fun onFling(
+//                e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float
+//            ): Boolean {
+//                if (fullscreenContent.scale - fullscreenContent.minScale < 0.001F )
+//                    return super.onFling(e1, e2, velocityX, velocityY)
+//                return false
+//            }
+//        })
+//        fullscreenContent.setOnTouchListener(View.OnTouchListener(fun(
+//            _: View,
+//            event: MotionEvent,
+//        ): Boolean {
+//            gestureDetector.onTouchEvent(event)
+//            return false
+//        }))
+
+        viewPager = findViewById(R.id.pager)
+        // The pager adapter, which provides the pages to the view pager widget.
+        val pagerAdapter = ScreenSlidePagerAdapter(this)
+        viewPager.adapter = pagerAdapter
+        viewPager.setCurrentItem(currentPosition,false)
 
 
         detailsConstraintLayout.setOnClickListener {}
@@ -113,10 +211,6 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             Log.i("Gestures", "details fragment OnTouchListener called")
             return gestureDetector2.onTouchEvent(event)
         }))
-
-        myMediaObjectsArray = Box.Get(intent, FULLSCREEN_IMAGE_ARRAY)
-        currentPosition = Box.Get(intent, FULLSCREEN_IMAGE_POSITION)
-        Box.Remove(intent)
 
         updateCurrentDisplayedPicture()
 
@@ -141,24 +235,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     private val handler = Handler(Looper.getMainLooper())
 
-    private fun loadFullscreenPicture() {
-        Log.i("Activity", "entered loadFullscreenPicture")
-        if (!myMediaObjectsArray[currentPosition].isVideo) {
-            myMediaObjectsArray[currentPosition].uri?.let {
-                ImageSource.uri(it)
-            }?.let { fullscreenContent.setImage(it) }
-        } else {
-            val mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(this, myMediaObjectsArray[currentPosition].uri)
-            val bmFrame = mediaMetadataRetriever.frameAtTime
-            bmFrame?.let { ImageSource.bitmap(it) }?.let { fullscreenContent.setImage(it) }
-        }
-//        Glide.with(this)
-//                .load(myMediaObjectsArray[currentPosition].uri)
-//                .error(R.mipmap.ic_launcher_round)
-////                .fitCenter()
-//                .into(fullscreenContent)
-    }
+
 
     inner class MyGlideTransformation : BitmapTransformation() {
         private val id: String = "com.bumptech.glide.transformations.MyGlideTransformation"
@@ -195,16 +272,6 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     private val loadSplitScreenPictureRunnable = Runnable {
         Log.i("Activity", "entered loadSplitScreenPictureRunnable")
-        if (!myMediaObjectsArray[currentPosition].isVideo) {
-            myMediaObjectsArray[currentPosition].uri?.let {
-                ImageSource.uri(it)
-            }?.let { fullscreenContent.setImage(it) }
-        } else {
-            val mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(this, myMediaObjectsArray[currentPosition].uri)
-            val bmFrame = mediaMetadataRetriever.frameAtTime
-            bmFrame?.let { ImageSource.bitmap(it) }?.let { fullscreenContent.setImage(it) }
-        }
 //        Glide.with(this)
 //                .load(myMediaObjectsArray[currentPosition].uri)
 //                .transform(MyGlideTransformation())
@@ -227,14 +294,14 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             imageViewPlayButton.visibility = View.GONE
 
         if (!inSplitView)
-            loadFullscreenPicture()
+//            loadFullscreenPicture()
         else loadSplitScreenPicture()
         updateDetails()
     }
 
     private fun toggle() {
         Log.i("Activity", "toggle entry, isFullscreen:$isFullscreen")
-        Log.i("ZOOM","scale: ${fullscreenContent.scale}; minScale:${fullscreenContent.minScale}")
+//        Log.i("ZOOM","scale: ${fullscreenContent.scale}; minScale:${fullscreenContent.minScale}")
         if (!inSplitView)
             if (isFullscreen)
                 showControls()
@@ -245,14 +312,14 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     private fun hideControls() {
         // Hide UI first
         supportActionBar?.hide()
-        fullscreenContentControls.visibility = View.GONE
+//        fullscreenContentControls.visibility = View.GONE
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
         isFullscreen = true
     }
 
     private fun showControls() {
         supportActionBar?.show()
-        fullscreenContentControls.visibility = View.VISIBLE
+//        fullscreenContentControls.visibility = View.VISIBLE
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
         isFullscreen = false
     }
@@ -260,7 +327,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     private fun hideDetails() {
         inSplitView = false
         detail_split_view.visibility = View.GONE
-        loadFullscreenPicture()
+//        loadFullscreenPicture()
     }
 
     private fun showDetails() {

@@ -15,8 +15,8 @@ import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gallery_app.*
-import com.example.gallery_app.adapter.AbstractMediaObjectHolder
-import com.example.gallery_app.adapter.ImageGridAdapter
+import com.example.gallery_app.uiClasses.AbstractMediaObjectHolder
+import com.example.gallery_app.uiClasses.ImageGridAdapter
 import com.example.gallery_app.storageAccess.*
 import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhotoArrayForAlbum
 import com.google.android.material.dialog.MaterialAlertDialogBuilder

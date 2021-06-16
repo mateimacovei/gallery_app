@@ -12,8 +12,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gallery_app.IMAGE_DETAILS
 import com.example.gallery_app.R
-import com.example.gallery_app.adapter.gestureListeners.MyFlingListener
-import com.example.gallery_app.adapter.gestureListeners.MyGestureListener
+import com.example.gallery_app.uiClasses.gestureListeners.MyFlingListener
+import com.example.gallery_app.uiClasses.gestureListeners.MyGestureListener
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.MyMediaObject
 import kotlinx.android.synthetic.main.activity_image_detail.*

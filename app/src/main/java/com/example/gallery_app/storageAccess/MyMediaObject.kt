@@ -1,6 +1,8 @@
 package com.example.gallery_app.storageAccess
 
+import android.content.ContentUris
 import android.net.Uri
+import android.provider.MediaStore
 
 class MyMediaObject (
         var uriId: Long? = null,
@@ -37,6 +39,16 @@ class MyMediaObject (
     override fun toString(): String {
         return "uriId: $uriId, isVideo: $isVideo, uri: $uri |  name:$name | path/data: ${this.DATA} | date modified:$DATE_MODIFIED | size:$SIZE | width:$WIDTH | height:$HEIGHT"
     }
+
+    fun toStringArrayListForSmallMyMediaObj(): ArrayList<String>{
+        val list = ArrayList<String>()
+        list.add(uri.toString())
+        list.add(name)
+        list.add(isVideo.toString())
+        return list
+    }
+
+    fun getExtension(): String = name.substringAfterLast('.')
 
     //    private fun reloadDimensionsFromExif(activity: Activity) {
 //        try {
@@ -78,4 +90,16 @@ class MyMediaObject (
 //
 //    }
 
+}
+
+
+class SmallMyMediaObject (stringArrayList: ArrayList<String>){
+    init {
+        val uri : Uri = stringArrayList[0].toLong().let {
+            ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, it)
+        }
+        val name = stringArrayList[1]
+        val extension = name.substringAfterLast('.')
+        val isVideo : Boolean = stringArrayList[2].toBoolean()
+    }
 }

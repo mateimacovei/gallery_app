@@ -7,10 +7,9 @@ import android.util.Log
 import android.view.View
 import com.example.gallery_app.IMAGE_GRID_MESSAGE
 import com.example.gallery_app.R
-import com.example.gallery_app.adapter.AbstractMediaObjectHolder
-import com.example.gallery_app.adapter.AlbumGridAdapter
+import com.example.gallery_app.uiClasses.AbstractMediaObjectHolder
+import com.example.gallery_app.uiClasses.AlbumGridAdapter
 import com.example.gallery_app.storageAccess.Box
-import com.example.gallery_app.storageAccess.GridSize
 import com.example.gallery_app.storageAccess.MyPhotoAlbum
 import com.example.gallery_app.storageAccess.StaticMethods
 import kotlinx.android.synthetic.main.activity_album_grid.*

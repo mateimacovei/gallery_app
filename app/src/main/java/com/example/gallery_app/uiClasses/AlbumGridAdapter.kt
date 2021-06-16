@@ -1,4 +1,4 @@
-package com.example.gallery_app.adapter
+package com.example.gallery_app.uiClasses
 
 import android.graphics.BlendMode
 import android.graphics.Color
@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.MultiTransformation
-import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners

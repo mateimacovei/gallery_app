@@ -1,20 +1,12 @@
 package com.example.gallery_app.activities
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.res.Configuration
-import android.graphics.Color
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.example.gallery_app.R
-import com.example.gallery_app.adapter.MyClickListener
+import com.example.gallery_app.uiClasses.MyClickListener
 import com.example.gallery_app.storageAccess.*
-import kotlinx.android.synthetic.main.image_grid_menu.*
 import kotlin.properties.Delegates
 
 const val VELOCITY_HIDE_SHOW_TOOLBAR_THRESHOLD: Long = 150
