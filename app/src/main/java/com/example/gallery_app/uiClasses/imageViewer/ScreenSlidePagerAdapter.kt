@@ -11,16 +11,13 @@ class ScreenSlidePagerAdapter(private val parentActivity: FullscreenImageActivit
     }
 
     override fun createFragment(position: Int): Fragment {
-        if (parentActivity.myMediaObjectsArray[position].getExtension().contentEquals("gif")) {
-            val fragment = ZoomImagePageFragment()
-            fragment.mediaObject = parentActivity.myMediaObjectsArray[position]
-            fragment.parentActivity = parentActivity
-            return fragment
-        } else {
-            val fragment = SubsamplingImagePageFragment()
-            fragment.mediaObject = parentActivity.myMediaObjectsArray[position]
-            fragment.parentActivity = parentActivity
-            return fragment
-        }
+        val fragment: ImageFragment =
+            when (parentActivity.myMediaObjectsArray[position].getExtension()) {
+                "gif" -> ZoomImagePageFragment()
+                else -> SubsamplingImagePageFragment()
+            }
+        fragment.mediaObject = parentActivity.myMediaObjectsArray[position]
+        fragment.parentActivity = parentActivity
+        return fragment
     }
 }

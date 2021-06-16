@@ -105,16 +105,6 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         val pagerAdapter = ScreenSlidePagerAdapter(this)
         viewPager.adapter = pagerAdapter
         viewPager.setCurrentItem(currentPosition, false)
-        //touch handlers
-        viewPager.setOnClickListener { toggle() }
-        val gestureDetector = GestureDetector(this, MyGestureListener(this))
-        viewPager.setOnTouchListener(View.OnTouchListener(fun(
-            _: View,
-            event: MotionEvent,
-        ): Boolean {
-            Log.i("Gestures", "viewPager OnTouchListener called")
-            return gestureDetector.onTouchEvent(event)
-        }))
 
         //touch handlers for the details layout
         detailsConstraintLayout.setOnClickListener {}
@@ -146,23 +136,6 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     fun detailsMenuButtonClicked(item: MenuItem) {
         startDetailsActivity()
-    }
-
-
-    private fun updateCurrentDisplayedPicture() {
-        Log.i("Activity", "updating current picture, inSplitView:$inSplitView")
-//        this.title = myPhotoArray[currentPosition].name
-
-
-//        if (myMediaObjectsArray[currentPosition].isVideo)
-//            imageViewPlayButton.visibility = View.VISIBLE
-//        else
-//            imageViewPlayButton.visibility = View.GONE
-//
-//        if (!inSplitView)
-////            loadFullscreenPicture()
-//        else loadSplitScreenPicture()
-        updateDetails()
     }
 
     fun toggle() {

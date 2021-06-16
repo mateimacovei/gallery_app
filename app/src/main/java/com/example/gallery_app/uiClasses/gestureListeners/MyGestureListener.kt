@@ -25,7 +25,7 @@ open class MyGestureListener(var listener : MyFlingListener? = null) : GestureDe
     }
 
     override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-        Log.i("Gestures", "onScroll called")
+        Log.i("Gestures", "onScroll called, distanceX:$distanceX, distanceY:$distanceY")
         return false
     }
 
