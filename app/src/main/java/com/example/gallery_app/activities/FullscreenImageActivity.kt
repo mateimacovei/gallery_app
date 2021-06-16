@@ -13,6 +13,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.*
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -35,7 +36,6 @@ import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.util.*
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
@@ -60,12 +60,13 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     private var isFullscreen: Boolean = true
 
     private lateinit var myMediaObjectsArray: ArrayList<MyMediaObject>
-    private var currentPosition: Int = 0
+//    private var currentPosition: Int = 0
     private var inSplitView = false
 
 
     class SubsamplingImagePageFragment : Fragment() {
         lateinit var mediaObject: MyMediaObject
+        lateinit var parentActivity: FullscreenImageActivity
 
         override fun onCreateView(
             inflater: LayoutInflater,
@@ -75,16 +76,51 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             val view = inflater.inflate(R.layout.item_subsampling_image, container, false)
             val fullscreenContent: SubsamplingScaleImageView =
                 view.findViewById(R.id.fullscreen_ImageView)
+            val imageViewPlayButton = view.findViewById<ImageView>(R.id.imageViewPlayButton)
+
             if (!mediaObject.isVideo) {
                 mediaObject.uri?.let {
                     ImageSource.uri(it)
                 }?.let { fullscreenContent.setImage(it) }
+                imageViewPlayButton.visibility = View.GONE
             } else {
                 val mediaMetadataRetriever = MediaMetadataRetriever()
                 mediaMetadataRetriever.setDataSource(context, mediaObject.uri)
                 val bmFrame = mediaMetadataRetriever.frameAtTime
-                bmFrame?.let { ImageSource.bitmap(it) }?.let {  fullscreenContent.setImage(it) }
+                bmFrame?.let { ImageSource.bitmap(it) }?.let { fullscreenContent.setImage(it) }
+
+                imageViewPlayButton.setOnClickListener {
+                    val openIntent = Intent(Intent.ACTION_VIEW)
+                    if (!mediaObject.isVideo)
+                        openIntent.setDataAndType(mediaObject.uri, "image/*")
+                    else
+                        openIntent.setDataAndType(mediaObject.uri, "video/*")
+                    openIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    startActivity(Intent.createChooser(openIntent, "Open with"))
+                }
             }
+
+            fullscreenContent.maxScale = 5000.0F
+
+            fullscreenContent.setOnClickListener { parentActivity.toggle() }
+            val gestureDetector =
+                GestureDetector(parentActivity, object : MyGestureListener(parentActivity) {
+                    override fun onFling(
+                        e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float
+                    ): Boolean {
+                        if (fullscreenContent.scale - fullscreenContent.minScale < 0.001F)
+                            return super.onFling(e1, e2, velocityX, velocityY)
+                        return false
+                    }
+                })
+            fullscreenContent.setOnTouchListener(View.OnTouchListener(fun(
+                _: View,
+                event: MotionEvent,
+            ): Boolean {
+                gestureDetector.onTouchEvent(event)
+                return false
+            }))
+
             return view
         }
 
@@ -100,6 +136,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     class ZoomImagePageFragment : Fragment() {
         lateinit var mediaObject: MyMediaObject
+        lateinit var parentActivity: FullscreenImageActivity
 
         override fun onCreateView(
             inflater: LayoutInflater,
@@ -115,30 +152,31 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
                 .error(R.mipmap.ic_launcher_round)
 //                .fitCenter()
                 .into(fullscreenContent)
-
+            fullscreenContent.setOnClickListener { parentActivity.toggle() }
+            fullscreenContent.setMyFlingListener(parentActivity)
             return view
         }
     }
 
-    inner class ScreenSlidePagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+    class ScreenSlidePagerAdapter(private val parentActivity: FullscreenImageActivity) : FragmentStateAdapter(parentActivity) {
         override fun getItemCount(): Int {
-            return myMediaObjectsArray.size
+            return parentActivity.myMediaObjectsArray.size
         }
 
         override fun createFragment(position: Int): Fragment {
-            if (myMediaObjectsArray[position].getExtension().contentEquals("gif")) {
+            if (parentActivity.myMediaObjectsArray[position].getExtension().contentEquals("gif")) {
                 val fragment = ZoomImagePageFragment()
-                fragment.mediaObject = myMediaObjectsArray[position]
+                fragment.mediaObject = parentActivity.myMediaObjectsArray[position]
+                fragment.parentActivity = parentActivity
                 return fragment
             }
             else {
                 val fragment = SubsamplingImagePageFragment()
-                fragment.mediaObject = myMediaObjectsArray[position]
+                fragment.mediaObject = parentActivity.myMediaObjectsArray[position]
+                fragment.parentActivity = parentActivity
                 return fragment
             }
-
         }
-
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -157,7 +195,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             )
         )
         myMediaObjectsArray = Box.Get(intent, FULLSCREEN_IMAGE_ARRAY)
-        currentPosition = Box.Get(intent, FULLSCREEN_IMAGE_POSITION)
+        val currentPosition: Int = Box.Get(intent, FULLSCREEN_IMAGE_POSITION)
         Box.Remove(intent)
 
         detail_split_view.visibility = View.GONE
@@ -165,42 +203,26 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
         frameLayoutZoomImage.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-
         isFullscreen = true
 
-        // Set up the user interaction to manually show or hide the system UI.
-//        fullscreenContent = findViewById(R.id.fullscreen_ImageView)
-        //astea sunt pt  MyZoomImageView
-//        fullscreenContent.setOnClickListener { toggle() }
-//        fullscreenContent.setMyFlingListener(this)
-//        fullscreenContent.maxScale = 5000.0F
-//        fullscreenContent.setOnClickListener { toggle() }
-
-
-//        val gestureDetector = GestureDetector(this, object : MyGestureListener(this) {
-//            override fun onFling(
-//                e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float
-//            ): Boolean {
-//                if (fullscreenContent.scale - fullscreenContent.minScale < 0.001F )
-//                    return super.onFling(e1, e2, velocityX, velocityY)
-//                return false
-//            }
-//        })
-//        fullscreenContent.setOnTouchListener(View.OnTouchListener(fun(
-//            _: View,
-//            event: MotionEvent,
-//        ): Boolean {
-//            gestureDetector.onTouchEvent(event)
-//            return false
-//        }))
 
         viewPager = findViewById(R.id.pager)
         // The pager adapter, which provides the pages to the view pager widget.
         val pagerAdapter = ScreenSlidePagerAdapter(this)
         viewPager.adapter = pagerAdapter
         viewPager.setCurrentItem(currentPosition,false)
+        //touch handlers
+        viewPager.setOnClickListener { toggle() }
+        val gestureDetector = GestureDetector(this, MyGestureListener(this))
+        viewPager.setOnTouchListener(View.OnTouchListener(fun(
+            _: View,
+            event: MotionEvent,
+        ): Boolean {
+            Log.i("Gestures", "viewPager OnTouchListener called")
+            return gestureDetector.onTouchEvent(event)
+        }))
 
-
+        //touch handlers for the details layout
         detailsConstraintLayout.setOnClickListener {}
         //FUN FACT: if I don't set a separate onClickListener, it will never reach fling
         val gestureDetector2 = GestureDetector(this, MyGestureListener(this))
@@ -208,11 +230,11 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             _: View,
             event: MotionEvent,
         ): Boolean {
-            Log.i("Gestures", "details fragment OnTouchListener called")
+            Log.i("Gestures", "details layout OnTouchListener called")
             return gestureDetector2.onTouchEvent(event)
         }))
 
-        updateCurrentDisplayedPicture()
+//        updateCurrentDisplayedPicture()
 
         hideControls()
     }
@@ -234,8 +256,6 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
 
     private val handler = Handler(Looper.getMainLooper())
-
-
 
     inner class MyGlideTransformation : BitmapTransformation() {
         private val id: String = "com.bumptech.glide.transformations.MyGlideTransformation"
@@ -288,14 +308,14 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 //        this.title = myPhotoArray[currentPosition].name
         title = ""
 
-        if (myMediaObjectsArray[currentPosition].isVideo)
-            imageViewPlayButton.visibility = View.VISIBLE
-        else
-            imageViewPlayButton.visibility = View.GONE
-
-        if (!inSplitView)
-//            loadFullscreenPicture()
-        else loadSplitScreenPicture()
+//        if (myMediaObjectsArray[currentPosition].isVideo)
+//            imageViewPlayButton.visibility = View.VISIBLE
+//        else
+//            imageViewPlayButton.visibility = View.GONE
+//
+//        if (!inSplitView)
+////            loadFullscreenPicture()
+//        else loadSplitScreenPicture()
         updateDetails()
     }
 
@@ -312,14 +332,14 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     private fun hideControls() {
         // Hide UI first
         supportActionBar?.hide()
-//        fullscreenContentControls.visibility = View.GONE
+        fullscreenContentControls.visibility = View.GONE
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
         isFullscreen = true
     }
 
     private fun showControls() {
         supportActionBar?.show()
-//        fullscreenContentControls.visibility = View.VISIBLE
+        fullscreenContentControls.visibility = View.VISIBLE
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
         isFullscreen = false
     }
@@ -342,24 +362,24 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
      * goes to the next image
      */
     override fun swipeLeft() {
-        if (currentPosition < myMediaObjectsArray.size - 1 && !inSplitView) {
-            currentPosition++
-            updateCurrentDisplayedPicture()
-        }
+//        if (currentPosition < myMediaObjectsArray.size - 1 && !inSplitView) {
+//            currentPosition++
+//            updateCurrentDisplayedPicture()
+//        }
     }
 
     /**
      * goes to the previous image
      */
     override fun swipeRight() {
-        if (currentPosition > 0 && !inSplitView) {
-            currentPosition--
-            updateCurrentDisplayedPicture()
-        }
+//        if (currentPosition > 0 && !inSplitView) {
+//            currentPosition--
+//            updateCurrentDisplayedPicture()
+//        }
     }
 
     private fun updateDetails() {
-        val mediaObject = myMediaObjectsArray[currentPosition]
+        val mediaObject = myMediaObjectsArray[viewPager.currentItem]
         textViewDate.text = SimpleDateFormat("dd MMMM yyyy").format(
             mediaObject.DATE_MODIFIED?.toLong()?.times(1000)?.let { Date(it) })
 
@@ -402,7 +422,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     private fun startDetailsActivity() {
         val intentDetailsPage = Intent(this, ImageDetailActivity::class.java)
-        Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myMediaObjectsArray[currentPosition])
+        Box.Add(intentDetailsPage, IMAGE_DETAILS, this.myMediaObjectsArray[viewPager.currentItem])
         this.startActivity(intentDetailsPage)
     }
 
@@ -431,16 +451,15 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     }
 
     private fun openWith() {
-        val uri = myMediaObjectsArray[currentPosition].uri
+        val mediaObject = myMediaObjectsArray[viewPager.currentItem]
         val openIntent = Intent(Intent.ACTION_VIEW)
 
-        if (!myMediaObjectsArray[currentPosition].isVideo)
-            openIntent.setDataAndType(uri, "image/*")
+        if (!mediaObject.isVideo)
+            openIntent.setDataAndType(mediaObject.uri, "image/*")
         else
-            openIntent.setDataAndType(uri, "video/*")
+            openIntent.setDataAndType(mediaObject.uri, "video/*")
 
         openIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-//        startActivity(openIntent)
         startActivity(Intent.createChooser(openIntent, "Open with"))
     }
 
@@ -449,45 +468,42 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     }
 
     fun editChipClicked(view: View) {
-        val uri = myMediaObjectsArray[currentPosition].uri
-
+        val mediaObject = myMediaObjectsArray[viewPager.currentItem]
         val editIntent = Intent(Intent.ACTION_EDIT)
 
-        if (!myMediaObjectsArray[currentPosition].isVideo)
-            editIntent.setDataAndType(uri, "image/*")
+        if (!mediaObject.isVideo)
+            editIntent.setDataAndType(mediaObject.uri, "image/*")
         else
-            editIntent.setDataAndType(uri, "video/*")
+            editIntent.setDataAndType(mediaObject.uri, "video/*")
 
         editIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         startActivity(Intent.createChooser(editIntent, null))
     }
 
     fun shareChipClicked(view: View) {
-        val uri = myMediaObjectsArray[currentPosition].uri
+        val mediaObject = myMediaObjectsArray[viewPager.currentItem]
 
         val sharingIntent = Intent(Intent.ACTION_SEND)
-        if (!myMediaObjectsArray[currentPosition].isVideo)
+        if (!mediaObject.isVideo)
             sharingIntent.type = "image/*"
         else
             sharingIntent.type = "video/*"
-        sharingIntent.putExtra(Intent.EXTRA_STREAM, uri)
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, mediaObject.uri)
 //        sharingIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         startActivity(Intent.createChooser(sharingIntent, "Share image using"))
 
     }
 
     fun deleteChipClicked(view: View) {
+        throw NotImplementedError()
+        val currentPosition = viewPager.currentItem
         myMediaObjectsArray[currentPosition].uri?.let { contentResolver.delete(it, null, null) }
         if (myMediaObjectsArray.size == 1)
             onBackPressed()
         myMediaObjectsArray.removeAt(currentPosition)
         if (currentPosition == myMediaObjectsArray.size)
-            swipeRight()
+            //TO DO
         else
             updateCurrentDisplayedPicture()
-    }
-
-    fun imagePlayButtonClicked(view: View) {
-        openWith()
     }
 }

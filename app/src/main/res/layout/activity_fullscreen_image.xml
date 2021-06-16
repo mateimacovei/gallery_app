@@ -51,16 +51,7 @@
             android:layout_height="match_parent"
             android:animateLayoutChanges="false"
             android:fitsSystemWindows="true">
-            <ImageView
-                android:id="@+id/imageViewPlayButton"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:onClick="imagePlayButtonClicked"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@android:drawable/ic_media_play" />
+
             <LinearLayout
                 android:id="@+id/fullscreen_content_controls"
                 style="@style/Widget.Theme.gallery_app.ButtonBar.Fullscreen"
