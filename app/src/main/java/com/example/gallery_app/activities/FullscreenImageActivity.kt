@@ -16,6 +16,7 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
@@ -36,16 +37,22 @@ import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.util.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.example.gallery_app.uiClasses.customViews.MyZoomImageView
 
 
-private const val DEBUG_TAG_GESTURES = "Gestures"
-private const val KEY_Small_MY_MEDIA_OBJECT = "gallery.FullscreenImageActivity.fragments.smallMediaObject"
-
-
+class SplitScreeViewModel : ViewModel() {
+    val currentSplitScreen: MutableLiveData<Long> by lazy {
+        MutableLiveData<Long>()
+    }
+}
 
 
 /**
@@ -54,19 +61,23 @@ private const val KEY_Small_MY_MEDIA_OBJECT = "gallery.FullscreenImageActivity.f
  */
 @Suppress("DEPRECATION")
 class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
-//    private lateinit var fullscreenContent: SubsamplingScaleImageView
+    //    private lateinit var fullscreenContent: SubsamplingScaleImageView
     private lateinit var viewPager: ViewPager2
     private lateinit var fullscreenContentControls: LinearLayout
     private var isFullscreen: Boolean = true
+    private val modelSplitScreen: SplitScreeViewModel by viewModels()
 
     private lateinit var myMediaObjectsArray: ArrayList<MyMediaObject>
-//    private var currentPosition: Int = 0
+
+    //    private var currentPosition: Int = 0
     private var inSplitView = false
 
 
     class SubsamplingImagePageFragment : Fragment() {
         lateinit var mediaObject: MyMediaObject
         lateinit var parentActivity: FullscreenImageActivity
+        private val modelSplitScreen: SplitScreeViewModel by activityViewModels()
+        private lateinit var fullscreenContent: SubsamplingScaleImageView
 
         override fun onCreateView(
             inflater: LayoutInflater,
@@ -74,21 +85,11 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             savedInstanceState: Bundle?
         ): View {
             val view = inflater.inflate(R.layout.item_subsampling_image, container, false)
-            val fullscreenContent: SubsamplingScaleImageView =
-                view.findViewById(R.id.fullscreen_ImageView)
+            fullscreenContent = view.findViewById(R.id.fullscreen_ImageView)
             val imageViewPlayButton = view.findViewById<ImageView>(R.id.imageViewPlayButton)
 
-            if (!mediaObject.isVideo) {
-                mediaObject.uri?.let {
-                    ImageSource.uri(it)
-                }?.let { fullscreenContent.setImage(it) }
-                imageViewPlayButton.visibility = View.GONE
-            } else {
-                val mediaMetadataRetriever = MediaMetadataRetriever()
-                mediaMetadataRetriever.setDataSource(context, mediaObject.uri)
-                val bmFrame = mediaMetadataRetriever.frameAtTime
-                bmFrame?.let { ImageSource.bitmap(it) }?.let { fullscreenContent.setImage(it) }
-
+            loadFullScreenPicture()
+            if (mediaObject.isVideo)
                 imageViewPlayButton.setOnClickListener {
                     val openIntent = Intent(Intent.ACTION_VIEW)
                     if (!mediaObject.isVideo)
@@ -98,7 +99,8 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
                     openIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                     startActivity(Intent.createChooser(openIntent, "Open with"))
                 }
-            }
+            else imageViewPlayButton.visibility = View.GONE
+
 
             fullscreenContent.maxScale = 5000.0F
 
@@ -121,7 +123,35 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
                 return false
             }))
 
+            modelSplitScreen.currentSplitScreen.observe(viewLifecycleOwner, { id ->
+                Log.i("LifeCycle", "self id: ${mediaObject.uriId}; idReceived: $id")
+                if (mediaObject.uriId == id)
+                    loadSplitScreenPicture()
+            })
+
             return view
+        }
+
+        private fun loadFullScreenPicture() {
+            if (!mediaObject.isVideo) {
+                mediaObject.uri?.let {
+                    ImageSource.uri(it)
+                }?.let { fullscreenContent.setImage(it) }
+
+            } else {
+                val mediaMetadataRetriever = MediaMetadataRetriever()
+                mediaMetadataRetriever.setDataSource(context, mediaObject.uri)
+                val bmFrame = mediaMetadataRetriever.frameAtTime
+                bmFrame?.let { ImageSource.bitmap(it) }?.let { fullscreenContent.setImage(it) }
+            }
+        }
+
+        private fun loadSplitScreenPicture() {
+            Toast.makeText(
+                context,
+                "TO DO: block touch, block zoom, center image",
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
 //        companion object {
@@ -137,6 +167,8 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     class ZoomImagePageFragment : Fragment() {
         lateinit var mediaObject: MyMediaObject
         lateinit var parentActivity: FullscreenImageActivity
+        private val modelSplitScreen: SplitScreeViewModel by activityViewModels()
+        private lateinit var fullscreenContent: MyZoomImageView
 
         override fun onCreateView(
             inflater: LayoutInflater,
@@ -144,21 +176,82 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             savedInstanceState: Bundle?
         ): View {
             val view = inflater.inflate(R.layout.item_zoom_image, container, false)
-            val fullscreenContent: MyZoomImageView =
-                view.findViewById(R.id.fullscreen_ImageView)
+            fullscreenContent = view.findViewById(R.id.fullscreen_ImageView)
+            loadFullScreenPicture()
+            fullscreenContent.setOnClickListener { parentActivity.toggle() }
+            fullscreenContent.setMyFlingListener(parentActivity)
 
+            modelSplitScreen.currentSplitScreen.observe(viewLifecycleOwner, { id ->
+                Log.i("LifeCycle", "self id: ${mediaObject.uriId}; idReceived: $id")
+                if (mediaObject.uriId == id) {
+                    loadSplitScreenPicture()
+                }
+            })
+
+            return view
+        }
+
+        private fun loadFullScreenPicture() {
             Glide.with(this)
                 .load(mediaObject.uri)
                 .error(R.mipmap.ic_launcher_round)
 //                .fitCenter()
                 .into(fullscreenContent)
-            fullscreenContent.setOnClickListener { parentActivity.toggle() }
-            fullscreenContent.setMyFlingListener(parentActivity)
-            return view
+        }
+
+
+        private val handler = Handler(Looper.getMainLooper())
+
+        inner class MyGlideTransformation : BitmapTransformation() {
+            private val id: String = "com.bumptech.glide.transformations.MyGlideTransformation"
+            private val idBytes: ByteArray = id.toByteArray(Charset.forName("UTF-8"))
+
+            override fun equals(o: Any?): Boolean {
+                return o is MyGlideTransformation
+            }
+
+            override fun hashCode(): Int {
+                return id.hashCode()
+            }
+
+            override fun updateDiskCacheKey(messageDigest: MessageDigest) {
+                messageDigest.update(idBytes);
+            }
+
+            override fun transform(
+                pool: BitmapPool,
+                toTransform: Bitmap,
+                outWidth: Int,
+                outHeight: Int
+            ): Bitmap {
+                Log.i("MyGlideTransformation", "outWidth: $outWidth, outHeight: $outHeight")
+//            Log.i("MyGlideTransformation","original bitmap: width:${toTransform.width}, height: ${toTransform.height}")
+                val centerFitted =
+                    TransformationUtils.fitCenter(pool, toTransform, outWidth, outHeight)
+//            Log.i("MyGlideTransformation","centerFitted bitmap: width:${centerFitted.width}, height: ${centerFitted.height}")
+
+                if (centerFitted.height < outHeight)
+                    return centerFitted
+                return TransformationUtils.centerCrop(pool, centerFitted, outWidth, outHeight)
+            }
+        }
+
+        private val loadSplitScreenPictureRunnable = Runnable {
+            Log.i("Activity", "entered loadSplitScreenPictureRunnable")
+        Glide.with(this)
+                .load(mediaObject.uri)
+                .transform(MyGlideTransformation())
+                .error(R.mipmap.ic_launcher_round)
+                .into(fullscreenContent)
+        }
+
+        private fun loadSplitScreenPicture() {
+            handler.post(loadSplitScreenPictureRunnable)
         }
     }
 
-    class ScreenSlidePagerAdapter(private val parentActivity: FullscreenImageActivity) : FragmentStateAdapter(parentActivity) {
+    class ScreenSlidePagerAdapter(private val parentActivity: FullscreenImageActivity) :
+        FragmentStateAdapter(parentActivity) {
         override fun getItemCount(): Int {
             return parentActivity.myMediaObjectsArray.size
         }
@@ -169,9 +262,8 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
                 fragment.mediaObject = parentActivity.myMediaObjectsArray[position]
                 fragment.parentActivity = parentActivity
                 return fragment
-            }
-            else {
-                val fragment = SubsamplingImagePageFragment()
+            } else {
+                val fragment = FullscreenImageActivity.SubsamplingImagePageFragment()
                 fragment.mediaObject = parentActivity.myMediaObjectsArray[position]
                 fragment.parentActivity = parentActivity
                 return fragment
@@ -210,7 +302,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         // The pager adapter, which provides the pages to the view pager widget.
         val pagerAdapter = ScreenSlidePagerAdapter(this)
         viewPager.adapter = pagerAdapter
-        viewPager.setCurrentItem(currentPosition,false)
+        viewPager.setCurrentItem(currentPosition, false)
         //touch handlers
         viewPager.setOnClickListener { toggle() }
         val gestureDetector = GestureDetector(this, MyGestureListener(this))
@@ -234,9 +326,9 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             return gestureDetector2.onTouchEvent(event)
         }))
 
-//        updateCurrentDisplayedPicture()
-
+        modelSplitScreen.currentSplitScreen.value = -1L
         hideControls()
+        title = ""
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -255,58 +347,10 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     }
 
 
-    private val handler = Handler(Looper.getMainLooper())
-
-    inner class MyGlideTransformation : BitmapTransformation() {
-        private val id: String = "com.bumptech.glide.transformations.MyGlideTransformation"
-        private val idBytes: ByteArray = id.toByteArray(Charset.forName("UTF-8"))
-
-        override fun equals(o: Any?): Boolean {
-            return o is MyGlideTransformation
-        }
-
-        override fun hashCode(): Int {
-            return id.hashCode()
-        }
-
-        override fun updateDiskCacheKey(messageDigest: MessageDigest) {
-            messageDigest.update(idBytes);
-        }
-
-        override fun transform(
-            pool: BitmapPool,
-            toTransform: Bitmap,
-            outWidth: Int,
-            outHeight: Int
-        ): Bitmap {
-            Log.i("MyGlideTransformation", "outWidth: $outWidth, outHeight: $outHeight")
-//            Log.i("MyGlideTransformation","original bitmap: width:${toTransform.width}, height: ${toTransform.height}")
-            val centerFitted = TransformationUtils.fitCenter(pool, toTransform, outWidth, outHeight)
-//            Log.i("MyGlideTransformation","centerFitted bitmap: width:${centerFitted.width}, height: ${centerFitted.height}")
-
-            if (centerFitted.height < outHeight)
-                return centerFitted
-            return TransformationUtils.centerCrop(pool, centerFitted, outWidth, outHeight)
-        }
-    }
-
-    private val loadSplitScreenPictureRunnable = Runnable {
-        Log.i("Activity", "entered loadSplitScreenPictureRunnable")
-//        Glide.with(this)
-//                .load(myMediaObjectsArray[currentPosition].uri)
-//                .transform(MyGlideTransformation())
-//                .error(R.mipmap.ic_launcher_round)
-//                .into(fullscreenContent)
-    }
-
-    private fun loadSplitScreenPicture() {
-        handler.post(loadSplitScreenPictureRunnable)
-    }
-
     private fun updateCurrentDisplayedPicture() {
         Log.i("Activity", "updating current picture, inSplitView:$inSplitView")
 //        this.title = myPhotoArray[currentPosition].name
-        title = ""
+
 
 //        if (myMediaObjectsArray[currentPosition].isVideo)
 //            imageViewPlayButton.visibility = View.VISIBLE
@@ -330,7 +374,6 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     }
 
     private fun hideControls() {
-        // Hide UI first
         supportActionBar?.hide()
         fullscreenContentControls.visibility = View.GONE
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -348,6 +391,8 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         inSplitView = false
         detail_split_view.visibility = View.GONE
 //        loadFullscreenPicture()
+        viewPager.isUserInputEnabled = true
+        modelSplitScreen.currentSplitScreen.value = -1L
     }
 
     private fun showDetails() {
@@ -355,28 +400,14 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
         if (!isFullscreen)
             hideControls()
         detail_split_view.visibility = View.VISIBLE
-        loadSplitScreenPicture()
+        viewPager.isUserInputEnabled = false
+        updateDetails()
+        modelSplitScreen.currentSplitScreen.value = myMediaObjectsArray[viewPager.currentItem].uriId
     }
 
-    /**
-     * goes to the next image
-     */
-    override fun swipeLeft() {
-//        if (currentPosition < myMediaObjectsArray.size - 1 && !inSplitView) {
-//            currentPosition++
-//            updateCurrentDisplayedPicture()
-//        }
-    }
-
-    /**
-     * goes to the previous image
-     */
-    override fun swipeRight() {
-//        if (currentPosition > 0 && !inSplitView) {
-//            currentPosition--
-//            updateCurrentDisplayedPicture()
-//        }
-    }
+    //    these are handled by the viewPager
+    override fun swipeLeft() {}
+    override fun swipeRight() {}
 
     private fun updateDetails() {
         val mediaObject = myMediaObjectsArray[viewPager.currentItem]
@@ -495,15 +526,15 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     }
 
     fun deleteChipClicked(view: View) {
-        throw NotImplementedError()
         val currentPosition = viewPager.currentItem
         myMediaObjectsArray[currentPosition].uri?.let { contentResolver.delete(it, null, null) }
         if (myMediaObjectsArray.size == 1)
             onBackPressed()
         myMediaObjectsArray.removeAt(currentPosition)
-        if (currentPosition == myMediaObjectsArray.size)
-            //TO DO
-        else
-            updateCurrentDisplayedPicture()
+        viewPager.adapter?.notifyItemRemoved(currentPosition) //TO DO test this
+//        if (currentPosition == myMediaObjectsArray.size)
+//            //TO DO
+//        else
+//            updateCurrentDisplayedPicture()
     }
 }
