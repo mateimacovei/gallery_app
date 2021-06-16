@@ -121,40 +121,28 @@ class SubsamplingImagePageFragment : ImageFragment() {
     override fun loadFullScreenPicture(forceLoad: Boolean) {
         if (!isFullscreen || forceLoad) {
             super.loadFullScreenPicture(forceLoad)
-            if (!mediaObject.isVideo) {
-                mediaObject.uri?.let {
-                    ImageSource.uri(it)
-                }?.let { fullscreenContent.setImage(it) }
-
-            } else {
-                val mediaMetadataRetriever = MediaMetadataRetriever()
-                mediaMetadataRetriever.setDataSource(context, mediaObject.uri)
-                val bmFrame = mediaMetadataRetriever.frameAtTime
-                bmFrame?.let { ImageSource.bitmap(it) }?.let { fullscreenContent.setImage(it) }
-            }
             fullscreenContent.isZoomEnabled = true
             fullscreenFragmentLayout?.intercept = false
-            buggyListenToOnScroll = false
+            if(forceLoad){
+                if (!mediaObject.isVideo) {
+                    mediaObject.uri?.let {
+                        ImageSource.uri(it)
+                    }?.let { fullscreenContent.setImage(it) }
+                } else {
+                    val mediaMetadataRetriever = MediaMetadataRetriever()
+                    mediaMetadataRetriever.setDataSource(context, mediaObject.uri)
+                    val bmFrame = mediaMetadataRetriever.frameAtTime
+                    bmFrame?.let { ImageSource.bitmap(it) }?.let { fullscreenContent.setImage(it) }
+                }
+            }
         }
     }
 
     private var oldCenter: PointF? = null
     private val handler = Handler(Looper.getMainLooper())
-    private var buggyListenToOnScroll = false
     private val loadSplitScreenPictureRunnable = Runnable {
         Log.i("Activity", "entered loadSplitScreenPictureRunnable")
         Log.i("Center","oldCenter: $oldCenter; center = ${fullscreenContent.center}")
-        try {
-            if (oldCenter?.x!! - fullscreenContent.center?.x!! > 0.01F || oldCenter?.x!! - fullscreenContent.center?.x!! > 0.01F)
-                Toast.makeText(
-                    context,
-                    "TO DO: make fling work for tall pictures",
-                    Toast.LENGTH_SHORT
-                ).show()
-            buggyListenToOnScroll = true
-        }catch (e: NullPointerException){
-            Log.w("Activity","(probably) one of the centers had null x/y; ${e.message}")
-        }
         fullscreenContent.setScaleAndCenter(fullscreenContent.scale, oldCenter)
         fullscreenFragmentLayout?.intercept = true
     }
