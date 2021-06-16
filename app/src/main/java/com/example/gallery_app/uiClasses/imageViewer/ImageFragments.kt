@@ -81,12 +81,12 @@ class SubsamplingImagePageFragment : ImageFragment() {
                 startActivity(Intent.createChooser(openIntent, "Open with"))
             }
         else imageViewPlayButton.visibility = View.GONE
-
+        fullscreenContent.setOnClickListener { parentActivity.toggle() }
 
         fullscreenContent.maxScale = 5000.0F
 
         fullscreenFragmentLayout = view.findViewById(R.id.fullscreenFragmentLayout)
-        fullscreenFragmentLayout?.setOnClickListener { parentActivity.toggle() }
+        fullscreenFragmentLayout?.setOnClickListener {}
         val gestureDetector =
             GestureDetector(parentActivity, object : MyGestureListener(parentActivity) {
                 override fun onFling(
@@ -97,10 +97,7 @@ class SubsamplingImagePageFragment : ImageFragment() {
                     return false
                 }
             })
-
-        fullscreenFragmentLayout?.setOnClickListener {}
         fullscreenFragmentLayout?.gestureDetector = gestureDetector
-        //the setOnClickListener is the same fun fact as the others
         //I need to call gestureDetector.onTouchEvent(event) both in setOnTouchListener and in onInterceptTouchEvent
         fullscreenFragmentLayout?.setOnTouchListener(
             View.OnTouchListener(

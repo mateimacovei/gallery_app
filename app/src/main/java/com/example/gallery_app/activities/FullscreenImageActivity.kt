@@ -302,11 +302,17 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
     fun deleteChipClicked(view: View) {
         val currentPosition = viewPager.currentItem
+        Log.i("ViewPager","currentPosition: $currentPosition")
         myMediaObjectsArray[currentPosition].uri?.let { contentResolver.delete(it, null, null) }
         if (myMediaObjectsArray.size == 1)
             onBackPressed()
+
         myMediaObjectsArray.removeAt(currentPosition)
-        viewPager.adapter?.notifyItemRemoved(currentPosition) //TO DO test this
+        viewPager.adapter?.notifyItemRemoved(currentPosition) //TO DO make this work
+
+//        if(currentPosition == myMediaObjectsArray.size)
+//            viewPager.currentItem = currentPosition-1
+//        else viewPager.currentItem = currentPosition
 //        if (currentPosition == myMediaObjectsArray.size)
 //            //TO DO
 //        else

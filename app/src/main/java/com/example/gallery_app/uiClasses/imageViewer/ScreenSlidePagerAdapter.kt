@@ -10,6 +10,10 @@ class ScreenSlidePagerAdapter(private val parentActivity: FullscreenImageActivit
         return parentActivity.myMediaObjectsArray.size
     }
 
+    override fun getItemId(position: Int): Long {
+        return parentActivity.myMediaObjectsArray[position].hashCode().toLong()
+    }
+
     override fun createFragment(position: Int): Fragment {
         val fragment: ImageFragment =
             when (parentActivity.myMediaObjectsArray[position].getExtension()) {
