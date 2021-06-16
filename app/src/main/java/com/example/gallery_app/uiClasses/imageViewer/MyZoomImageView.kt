@@ -1,4 +1,4 @@
-package com.example.gallery_app.uiClasses.customViews
+package com.example.gallery_app.uiClasses.imageViewer
 
 import android.content.Context
 import android.graphics.Matrix
