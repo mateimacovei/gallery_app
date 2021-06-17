@@ -20,7 +20,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.example.gallery_app.R
 import com.example.gallery_app.activities.ImageGridActivity
-import com.example.gallery_app.storageAccess.MyMediaObject
+import com.example.gallery_app.storageAccess.domain.MyMediaObject
 import com.example.gallery_app.storageAccess.PreferencesFileHandler
 import com.example.gallery_app.storageAccess.shouldShowFullscreenIcon
 import kotlinx.android.synthetic.main.item_image_in_grid.view.*

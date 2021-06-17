@@ -10,8 +10,6 @@ import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.ImageView
-import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -24,7 +22,7 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.example.gallery_app.R
 import com.example.gallery_app.activities.FullscreenImageActivity
 import com.example.gallery_app.activities.SplitScreeViewModel
-import com.example.gallery_app.storageAccess.MyMediaObject
+import com.example.gallery_app.storageAccess.domain.MyMediaObject
 import com.example.gallery_app.uiClasses.gestureListeners.MyGestureListener
 import java.nio.charset.Charset
 import java.security.MessageDigest

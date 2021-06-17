@@ -22,7 +22,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.example.gallery_app.R
 import com.example.gallery_app.activities.AlbumGridActivity
-import com.example.gallery_app.storageAccess.MyPhotoAlbum
+import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
 import kotlinx.android.synthetic.main.item_album_in_grid.view.*
 
 class AlbumGridAdapter(private val context: AlbumGridActivity, private val albums: ArrayList<MyPhotoAlbum>) :

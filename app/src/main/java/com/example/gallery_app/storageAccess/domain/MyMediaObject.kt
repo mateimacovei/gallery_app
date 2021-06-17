@@ -1,51 +1,64 @@
-package com.example.gallery_app.storageAccess
+package com.example.gallery_app.storageAccess.domain
 
-import android.content.ContentUris
 import android.net.Uri
-import android.provider.MediaStore
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
 
-class MyMediaObject (
-        var uriId: Long? = null,
-        // I will store this one in the database, in order to get the uri from it
+@Entity
+class MyMediaObject {
+    // I will store this one in the database, in order to get the uri from it
+    @PrimaryKey(autoGenerate = false)
+    @ColumnInfo(name="rowid")
+    var uriId: Long? = null
+    var fullPath: String? = null
+    var dateModified: String? = null
 
-        var uri: Uri? = null,
+    var size: Double? = null
+    var width: String? = null
+    var height: String? = null
 
-        var DATA: String?,
-
-        var DATE_MODIFIED: String?,
-
-        SIZE: String?,
-
-        var WIDTH: String?,
-
-        var HEIGHT: String?,
-
-        var isVideo: Boolean = false
-){
-    var SIZE: Double? = SIZE?.toDouble()
+    @Ignore
     var selected: Boolean = false
     var name: String = ""
     var albumFullPath: String = ""
+    var isVideo: Boolean = false
+
+    @Ignore
+    var uri: Uri? = null
 
 
-    init {
-        var splitPath = this.DATA?.split('/')
+    constructor(
+        uriId: Long? = null,
+        uri: Uri? = null,
+        DATA: String?,
+        DATE_MODIFIED: String?,
+        SIZE: String?,
+        WIDTH: String?,
+        HEIGHT: String?,
+        isVideo: Boolean = false
+    ) {
+        this.uriId = uriId
+        this.uri = uri
+        this.fullPath = DATA
+        this.dateModified = DATE_MODIFIED
+        this.size = SIZE?.toDouble()
+        this.width = WIDTH
+        this.height = HEIGHT
+        this.isVideo = isVideo
+
+        var splitPath = this.fullPath?.split('/')
 
         this.name = splitPath?.last() ?: ""
         splitPath = splitPath?.dropLast(1)
         this.albumFullPath = splitPath?.joinToString(separator = "/") ?: ""
     }
 
-    override fun toString(): String {
-        return "uriId: $uriId, isVideo: $isVideo, uri: $uri |  name:$name | path/data: ${this.DATA} | date modified:$DATE_MODIFIED | size:$SIZE | width:$WIDTH | height:$HEIGHT"
-    }
+    constructor(){}
 
-    fun toStringArrayListForSmallMyMediaObj(): ArrayList<String>{
-        val list = ArrayList<String>()
-        list.add(uri.toString())
-        list.add(name)
-        list.add(isVideo.toString())
-        return list
+    override fun toString(): String {
+        return "uriId: $uriId, isVideo: $isVideo, uri: $uri |  name:$name | path/data: ${this.fullPath} | date modified:$dateModified | size:$size | width:$width | height:$height"
     }
 
     fun getExtension(): String = name.substringAfterLast('.')
@@ -90,16 +103,4 @@ class MyMediaObject (
 //
 //    }
 
-}
-
-
-class SmallMyMediaObject (stringArrayList: ArrayList<String>){
-    init {
-        val uri : Uri = stringArrayList[0].toLong().let {
-            ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, it)
-        }
-        val name = stringArrayList[1]
-        val extension = name.substringAfterLast('.')
-        val isVideo : Boolean = stringArrayList[2].toBoolean()
-    }
 }

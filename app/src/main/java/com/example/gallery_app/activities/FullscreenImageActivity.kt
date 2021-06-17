@@ -4,25 +4,15 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.drawable.ColorDrawable
 import android.icu.text.SimpleDateFormat
-import android.media.MediaMetadataRetriever
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.*
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
-import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
-import com.bumptech.glide.load.resource.bitmap.TransformationUtils
-import com.davemorrissey.labs.subscaleview.ImageSource
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
 import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
 import com.example.gallery_app.IMAGE_DETAILS
@@ -30,22 +20,14 @@ import com.example.gallery_app.R
 import com.example.gallery_app.uiClasses.gestureListeners.MyFlingListener
 import com.example.gallery_app.uiClasses.gestureListeners.MyGestureListener
 import com.example.gallery_app.storageAccess.Box
-import com.example.gallery_app.storageAccess.MyMediaObject
+import com.example.gallery_app.storageAccess.domain.MyMediaObject
 import kotlinx.android.synthetic.main.activity_fullscreen_image.*
 import kotlinx.android.synthetic.main.activity_image_detail.*
-import java.nio.charset.Charset
-import java.security.MessageDigest
 import java.util.*
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
-import com.bumptech.glide.Glide
-import com.example.gallery_app.uiClasses.imageViewer.MyZoomImageView
 import com.example.gallery_app.uiClasses.imageViewer.ScreenSlidePagerAdapter
-import com.example.gallery_app.uiClasses.imageViewer.ZoomImagePageFragment
 
 
 class SplitScreeViewModel : ViewModel() {
@@ -187,7 +169,7 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     private fun updateDetails() {
         val mediaObject = myMediaObjectsArray[viewPager.currentItem]
         textViewDate.text = SimpleDateFormat("dd MMMM yyyy").format(
-            mediaObject.DATE_MODIFIED?.toLong()?.times(1000)?.let { Date(it) })
+            mediaObject.dateModified?.toLong()?.times(1000)?.let { Date(it) })
 
         if (mediaObject.name.length <= 30)
             textViewTitle.text = mediaObject.name
@@ -196,8 +178,8 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
 
         textViewPath.text = mediaObject.albumFullPath
 
-        if (mediaObject.SIZE != null) {
-            var size: Double = mediaObject.SIZE!!
+        if (mediaObject.size != null) {
+            var size: Double = mediaObject.size!!
             val rate = 1025
 
             if (size / rate < rate)
@@ -221,8 +203,8 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
             clipboard.setPrimaryClip(clip)
         }
 
-        if (mediaObject.HEIGHT != null)
-            (mediaObject.WIDTH + "x" + mediaObject.HEIGHT).also { textViewResolution.text = it }
+        if (mediaObject.height != null)
+            (mediaObject.width + "x" + mediaObject.height).also { textViewResolution.text = it }
         else textViewResolution.text = ""
     }
 

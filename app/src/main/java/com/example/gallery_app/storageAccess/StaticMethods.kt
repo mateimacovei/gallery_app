@@ -7,6 +7,8 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import com.example.gallery_app.activities.ImageGridActivity
+import com.example.gallery_app.storageAccess.domain.MyMediaObject
+import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
 
 class StaticMethods {
     companion object {
@@ -55,9 +57,9 @@ class StaticMethods {
             picturesMap.putAll(videosMap)
 
             for (mediaObject in oldMediaObjects)
-                if (picturesMap.containsKey(mediaObject.DATA)) {
+                if (picturesMap.containsKey(mediaObject.fullPath)) {
                     if (mediaObject.selected)
-                        picturesMap[mediaObject.DATA]?.selected = true
+                        picturesMap[mediaObject.fullPath]?.selected = true
                 } else
                     changed = true
 
@@ -140,7 +142,7 @@ class StaticMethods {
          * returns: map Key=path, without picture name | Value = List of Photos in the same folder
          */
         private fun createAlbums(photos: MutableMap<String, MyMediaObject>,
-                                 videos: MutableMap<String,MyMediaObject>
+                                 videos: MutableMap<String, MyMediaObject>
                                 ): MutableMap<String, ArrayList<MyMediaObject>> {
             val albumMap: MutableMap<String, ArrayList<MyMediaObject>> = mutableMapOf()
 

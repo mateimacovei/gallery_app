@@ -15,7 +15,7 @@ import com.example.gallery_app.R
 import com.example.gallery_app.uiClasses.gestureListeners.MyFlingListener
 import com.example.gallery_app.uiClasses.gestureListeners.MyGestureListener
 import com.example.gallery_app.storageAccess.Box
-import com.example.gallery_app.storageAccess.MyMediaObject
+import com.example.gallery_app.storageAccess.domain.MyMediaObject
 import kotlinx.android.synthetic.main.activity_image_detail.*
 import java.util.*
 
@@ -48,7 +48,7 @@ class ImageDetailActivity : AppCompatActivity(), MyFlingListener {
 
     private fun loadDetails(mediaObject: MyMediaObject){
         textViewDate.text = SimpleDateFormat("dd MMMM yyyy").format(
-                mediaObject.DATE_MODIFIED?.toLong()?.times(1000)?.let { Date(it) })
+                mediaObject.dateModified?.toLong()?.times(1000)?.let { Date(it) })
 
 //        textViewTitle.text = photo.name
         if (mediaObject.name.length <= 30)
@@ -61,8 +61,8 @@ class ImageDetailActivity : AppCompatActivity(), MyFlingListener {
 //        (photo.SIZE + " b").also { textViewSize.text = it }
         // TO DO : make switch case for kb,mb; also use B, not b
 
-        if(mediaObject.SIZE!=null) {
-            var size: Double = mediaObject.SIZE!!
+        if(mediaObject.size!=null) {
+            var size: Double = mediaObject.size!!
             val rate =1025
 
             if (size / rate < rate)
@@ -91,8 +91,8 @@ class ImageDetailActivity : AppCompatActivity(), MyFlingListener {
 //            //TO DO : reload dimensions. works on android 11 for both png and gif, not on android 10
 //        }
 //
-        if (mediaObject.HEIGHT != null)
-            (mediaObject.WIDTH + "x" + mediaObject.HEIGHT).also { textViewResolution.text = it }
+        if (mediaObject.height != null)
+            (mediaObject.width + "x" + mediaObject.height).also { textViewResolution.text = it }
     }
 
     override fun swipeLeft() {

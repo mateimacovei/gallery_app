@@ -14,8 +14,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
 import com.example.gallery_app.activities.AlbumGridActivity
-import com.example.gallery_app.database.AppDatabase
-import com.example.gallery_app.database.domain.Tag
+import com.example.gallery_app.storageAccess.database.AppDatabase
+import com.example.gallery_app.storageAccess.domain.Tag
 import kotlin.concurrent.thread
 
 const val IMAGE_GRID_MESSAGE = "com.example.gallery_app.IMAGEGRID"
@@ -35,6 +35,33 @@ class MainActivity : AppCompatActivity() {
         requestPermissions()
         // TO DO : request StorageMedia refresh
 
+        thread{
+            val db = Room.databaseBuilder(
+                applicationContext,
+                AppDatabase::class.java, "my-gallery-database"
+            )
+                .fallbackToDestructiveMigration()
+                .build()
+
+            val tagDAO = db.tagDao()
+            tagDAO.deleteAll()
+            tagDAO.insertAll(Tag(name = "test tag 1"), Tag(name = "test tag 2"), Tag(name = "ははは"))
+            val tags = tagDAO.getAll()
+            db.close()
+            Log.i("Tags", "Found: ${tags.size}")
+            tags.forEach { run { Log.i("Database", "id: ${it.rowId}, text:${it.name}") } }
+            runOnUiThread {
+                Runnable {
+                    Toast.makeText(
+                        this,
+                        "last tag: ${tags[tags.lastIndex].name}",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+
+                }
+            }
+        }
 
 //        thread {
 //            val db = Room.databaseBuilder(
@@ -93,6 +120,8 @@ class MainActivity : AppCompatActivity() {
             permissions: Array<out String>,
             grantResults: IntArray,
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        //TO DO: ^ any effect?
         if (requestCode == PERMS_RETURN) {
             if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 Toast.makeText(this, "Storage permissions denied!", Toast.LENGTH_LONG).show()

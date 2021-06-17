@@ -1,10 +1,10 @@
-package com.example.gallery_app.database.DAO
+package com.example.gallery_app.storageAccess.database
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import com.example.gallery_app.database.domain.Tag
+import com.example.gallery_app.storageAccess.domain.Tag
 
 @Dao
 interface TagDAO {
@@ -22,8 +22,11 @@ interface TagDAO {
     fun insertAll(vararg tags: Tag)
 
     @Delete
-    fun delete(user: Tag)
+    fun delete(tag: Tag)
 
     @Query("DELETE FROM Tag WHERE rowid = (:id)")
     fun deleteOneById(id: Long)
+
+    @Query("DELETE FROM Tag")
+    fun deleteAll()
 }

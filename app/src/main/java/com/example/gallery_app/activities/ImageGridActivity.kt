@@ -19,6 +19,7 @@ import com.example.gallery_app.uiClasses.AbstractMediaObjectHolder
 import com.example.gallery_app.uiClasses.ImageGridAdapter
 import com.example.gallery_app.storageAccess.*
 import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhotoArrayForAlbum
+import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
