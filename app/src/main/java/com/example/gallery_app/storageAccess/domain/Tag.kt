@@ -11,5 +11,7 @@ data class Tag(
     val rowId: Long? = null,
     val name: String?
 ){
-
+    override fun toString(): String {
+        return "Tag(rowId=$rowId, name=$name)"
+    }
 }

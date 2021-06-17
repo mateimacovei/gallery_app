@@ -13,4 +13,8 @@ class TagToMediaObject(
     val tagId: Long?,
     val mediaObjectId: Long?
 ) {
+
+    override fun toString(): String {
+        return "TagToMediaObject(rowId=$rowId, tagId=$tagId, mediaObjectId=$mediaObjectId)"
+    }
 }

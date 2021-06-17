@@ -13,21 +13,21 @@ import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
 class StaticMethods {
     companion object {
         private val projectionImages = arrayOf(
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DATE_MODIFIED,
-                MediaStore.Images.Media.SIZE,
-                MediaStore.Images.Media.WIDTH,
-                MediaStore.Images.Media.HEIGHT,
-                MediaStore.Images.Media.DATA
+            MediaStore.Images.Media._ID,
+            MediaStore.Images.Media.DATE_MODIFIED,
+            MediaStore.Images.Media.SIZE,
+            MediaStore.Images.Media.WIDTH,
+            MediaStore.Images.Media.HEIGHT,
+            MediaStore.Images.Media.DATA
         )
 
         private val projectionVideos = arrayOf(
-                MediaStore.Video.Media._ID,
-                MediaStore.Video.Media.DATE_MODIFIED,
-                MediaStore.Video.Media.SIZE,
-                MediaStore.Video.Media.WIDTH,
-                MediaStore.Video.Media.HEIGHT,
-                MediaStore.Video.Media.DATA
+            MediaStore.Video.Media._ID,
+            MediaStore.Video.Media.DATE_MODIFIED,
+            MediaStore.Video.Media.SIZE,
+            MediaStore.Video.Media.WIDTH,
+            MediaStore.Video.Media.HEIGHT,
+            MediaStore.Video.Media.DATA
         )
 
         /**
@@ -48,9 +48,20 @@ class StaticMethods {
 //            }
 //            val picturesMap: MutableMap<String, MyMediaObject> = getPhotosFromCursor(imageCursor)
 
-            val sortOrderString = getSortOrderString(sortBy = PreferencesFileHandler.getSortBy(imageGridActivity), sortOrder = PreferencesFileHandler.getSortOrder(imageGridActivity))
-            val picturesMap = getPictures(imageGridActivity, albumPath = imageGridActivity.album.albumFullPath, sortOrder = sortOrderString)
-            val videosMap = getVideos(imageGridActivity, albumPath = imageGridActivity.album.albumFullPath, sortOrder = sortOrderString)
+            val sortOrderString = getSortOrderString(
+                sortBy = PreferencesFileHandler.getSortBy(imageGridActivity),
+                sortOrder = PreferencesFileHandler.getSortOrder(imageGridActivity)
+            )
+            val picturesMap = getPictures(
+                imageGridActivity,
+                albumPath = imageGridActivity.album.albumFullPath,
+                sortOrder = sortOrderString
+            )
+            val videosMap = getVideos(
+                imageGridActivity,
+                albumPath = imageGridActivity.album.albumFullPath,
+                sortOrder = sortOrderString
+            )
 
             imageGridActivity.album.nrPhotos = picturesMap.size
             imageGridActivity.album.nrVideos = videosMap.size
@@ -63,7 +74,7 @@ class StaticMethods {
                 } else
                     changed = true
 
-            val newPhotos: List<MyMediaObject> = picturesMap.map { x->x.value }
+            val newPhotos: List<MyMediaObject> = picturesMap.map { x -> x.value }
             //TO DO now videos are always at the end. SORT IT
 
             if (oldMediaObjects.size != newPhotos.size)
@@ -72,53 +83,70 @@ class StaticMethods {
             return Pair(changed, newPhotos)
         }
 
-        private fun fitAlbumPathMap(mediaObjectsMap: MutableMap<String, MyMediaObject>, albumFullPath: String): MutableMap<String, MyMediaObject> {
-            val result = mutableMapOf<String, MyMediaObject>()
-            for (photoFullPath in mediaObjectsMap.keys) {
-                val candidate = mediaObjectsMap[photoFullPath]
-                if (candidate?.albumFullPath == albumFullPath)
-                    result[photoFullPath] = candidate
-            }
-            return result
-        }
+//        /**
+//         * filter the map, emininating the mediaObjects in subfolders of the album
+//         */
+//        private fun fitAlbumPathMap(mediaObjectsMap: MutableMap<String, MyMediaObject>, albumFullPath: String): MutableMap<String, MyMediaObject> {
+//            val result = mutableMapOf<String, MyMediaObject>()
+//            for (photoFullPath in mediaObjectsMap.keys) {
+//                val candidate = mediaObjectsMap[photoFullPath]
+//                if (candidate?.albumFullPath == albumFullPath)
+//                    result[photoFullPath] = candidate
+//                else
+//                    Log.i("Storage","eliminated ${candidate?.albumFullPath}, not fitted with $albumFullPath")
+//            }
+//            return result
+//        }
 
         /**
          * returns a map Key=picture name with full path | Value = MyPhoto object
          */
-        private fun getPictures(activity: Activity, sortOrder: String, albumPath: String?=null): MutableMap<String, MyMediaObject> {
-            val imageCursor: Cursor? = getImageCursor(activity, sortOrder = sortOrder, path = albumPath)
+        private fun getPictures(
+            activity: Activity,
+            sortOrder: String,
+            albumPath: String? = null
+        ): MutableMap<String, MyMediaObject> {
+            val imageCursor: Cursor? =
+                getImageCursor(activity, sortOrder = sortOrder, path = albumPath)
             if (imageCursor == null) {
                 Log.w("Files", "getImageCursor returned null")
                 return mutableMapOf()
             }
-            return if (albumPath != null)
-                fitAlbumPathMap(getPhotosFromCursor(imageCursor), albumPath)
-            else getPhotosFromCursor(imageCursor)
+            return getPhotosFromCursor(imageCursor, albumPath)
         }
 
         /**
          * returns a map Key=video name with full path | Value = MyVideo object
          */
-        private fun getVideos(activity: Activity, sortOrder: String, albumPath: String?=null): MutableMap<String, MyMediaObject> {
-            val videoCursor: Cursor? = getVideoCursor(activity, sortOrder = sortOrder, path = albumPath)
+        private fun getVideos(
+            activity: Activity,
+            sortOrder: String,
+            albumPath: String? = null
+        ): MutableMap<String, MyMediaObject> {
+            val videoCursor: Cursor? =
+                getVideoCursor(activity, sortOrder = sortOrder, path = albumPath)
             if (videoCursor == null) {
                 Log.w("Files", "getVideoCursor returned null")
                 return mutableMapOf()
             }
-            return if (albumPath != null)
-                fitAlbumPathMap(getVideosFromCursor(videoCursor), albumPath)
-            else getVideosFromCursor(videoCursor)
+            return getVideosFromCursor(videoCursor, albumPath)
         }
 
         /**
          * return an List containing all the photo albums
          */
         fun getAllAlbums(activity: Activity): ArrayList<MyPhotoAlbum> {
-            val sortOrderString = getSortOrderString(sortBy = PreferencesFileHandler.getSortBy(activity), sortOrder = PreferencesFileHandler.getSortOrder(activity))
-            val picturesMap: MutableMap<String, MyMediaObject> = getPictures(activity,sortOrder = sortOrderString)
-            val videosMap: MutableMap<String, MyMediaObject> = getVideos(activity,sortOrder = sortOrderString)
+            val sortOrderString = getSortOrderString(
+                sortBy = PreferencesFileHandler.getSortBy(activity),
+                sortOrder = PreferencesFileHandler.getSortOrder(activity)
+            )
+            val picturesMap: MutableMap<String, MyMediaObject> =
+                getPictures(activity, sortOrder = sortOrderString)
+            val videosMap: MutableMap<String, MyMediaObject> =
+                getVideos(activity, sortOrder = sortOrderString)
 
-            val provAlbumMap: MutableMap<String, ArrayList<MyMediaObject>> = createAlbums(picturesMap,videosMap)
+            val provAlbumMap: MutableMap<String, ArrayList<MyMediaObject>> =
+                createAlbums(picturesMap, videosMap)
 
             return buildAlbumListFromPathMap(provAlbumMap)
         }
@@ -141,9 +169,10 @@ class StaticMethods {
          * param: map: Key=picture name with full path | Value = MyPhoto object
          * returns: map Key=path, without picture name | Value = List of Photos in the same folder
          */
-        private fun createAlbums(photos: MutableMap<String, MyMediaObject>,
-                                 videos: MutableMap<String, MyMediaObject>
-                                ): MutableMap<String, ArrayList<MyMediaObject>> {
+        private fun createAlbums(
+            photos: MutableMap<String, MyMediaObject>,
+            videos: MutableMap<String, MyMediaObject>
+        ): MutableMap<String, ArrayList<MyMediaObject>> {
             val albumMap: MutableMap<String, ArrayList<MyMediaObject>> = mutableMapOf()
 
             for (key in photos.keys) {
@@ -187,59 +216,74 @@ class StaticMethods {
          * return a image cursor using the static projection,
          * WARNING: filtering by path will also return sub-folders content
          */
-        private fun getImageCursor(activity: Activity, sortOrder: String?, path: String?=null): Cursor? {
+        private fun getImageCursor(
+            activity: Activity,
+            sortOrder: String?,
+            path: String? = null
+        ): Cursor? {
             return if (path == null)
                 activity.contentResolver.query(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        projectionImages,
-                        null, null,
-                        sortOrder)
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    projectionImages,
+                    null, null,
+                    sortOrder
+                )
             else
                 activity.contentResolver.query(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        projectionImages,
-                        MediaStore.Files.FileColumns.DATA + " LIKE ?", arrayOf("$path%"),
-                        sortOrder)
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    projectionImages,
+                    MediaStore.Files.FileColumns.DATA + " LIKE ?", arrayOf("$path%"),
+                    sortOrder
+                )
         }
 
         /**
          * return a video cursor using the static projection
          * WARNING: filtering by path will also return sub-folders content
          */
-        private fun getVideoCursor(activity: Activity, sortOrder: String?, path: String?=null): Cursor? {
+        private fun getVideoCursor(
+            activity: Activity,
+            sortOrder: String?,
+            path: String? = null
+        ): Cursor? {
             return if (path == null)
                 activity.contentResolver.query(
-                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                        projectionImages,
-                        null, null,
-                        sortOrder)
+                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                    projectionVideos,
+                    null, null,
+                    sortOrder
+                )
             else
                 activity.contentResolver.query(
-                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                        projectionImages,
-                        MediaStore.Files.FileColumns.DATA + " LIKE ?", arrayOf("$path%"),
-                        sortOrder)
+                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                    projectionVideos,
+                    MediaStore.Files.FileColumns.DATA + " LIKE ?", arrayOf("$path%"),
+                    sortOrder
+                )
         }
 
         /**
          * returns a map Key=picture name with full path | Value = MyPhoto object
          */
-        private fun getPhotosFromCursor(cursor: Cursor): MutableMap<String, MyMediaObject> {
+        private fun getPhotosFromCursor(
+            cursor: Cursor,
+            albumPath: String?
+        ): MutableMap<String, MyMediaObject> {
             val pictures: MutableMap<String, MyMediaObject> = mutableMapOf()
 
 
             val actualImageColumnIndex__ID: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+                cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
             val actualImageColumnIndexDATE_MODIFIED: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED)
+                cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED)
             val actualImageColumnIndexSIZE: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE)
+                cursor.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE)
             val actualImageColumnIndexWIDTH: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH)
+                cursor.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH)
             val actualImageColumnIndexHEIGHT: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT)
+                cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT)
             val actualImageColumnIndexDATA: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
 
             Log.i("Files", "IMAGE EXTERNAL_URI cursor size: ${cursor.count}")
 
@@ -251,25 +295,51 @@ class StaticMethods {
                 }
 
                 val data: String? =
-                        actualImageColumnIndexDATA.let { cursor.getString(it) }
+                    actualImageColumnIndexDATA.let { cursor.getString(it) }
                 val dateModified: String? =
-                        actualImageColumnIndexDATE_MODIFIED.let { cursor.getString(it) }
+                    actualImageColumnIndexDATE_MODIFIED.let { cursor.getString(it) }
                 val size: String? = actualImageColumnIndexSIZE.let { cursor.getString(it) }
                 val width: String? = actualImageColumnIndexWIDTH.let { cursor.getString(it) }
                 val height: String? = actualImageColumnIndexHEIGHT.let { cursor.getString(it) }
 
 
                 if (data != null) {
-                    pictures[data] = MyMediaObject(
+                    if(albumPath == null)
+                        pictures[data] = MyMediaObject(
                             uriId = id,
                             uri = uri,
-                            DATA = data,
-                            DATE_MODIFIED = dateModified,
-                            SIZE = size,
-                            WIDTH = width,
-                            HEIGHT = height)
+                            fullPath = data,
+                            dateModified = dateModified,
+                            size = size,
+                            width = width,
+                            height = height
+                        )
+                    else {
+                        var splitPath = data.split('/')
+                        val name = splitPath.last() ?: ""
+                        splitPath = splitPath.dropLast(1)
+                        val albumFullPath = splitPath.joinToString(separator = "/") ?: ""
+
+                        if (albumFullPath == albumPath)
+                            pictures[data] = MyMediaObject(
+                                uriId = id,
+                                uri = uri,
+                                fullPath = data,
+                                dateModified = dateModified,
+                                size = size,
+                                width = width,
+                                height = height,
+                                name = name,
+                                albumFullPath = albumFullPath
+                            )
+                        else Log.i("Files", "rejected data:$data, albumPath:$albumPath")
+                    }
                 } else
-                    Log.w("Files", "load failed : failed null-check in getAllPictures(): data: $data | uri:$uri")
+                    Log.w(
+                        "Files",
+                        "load failed : failed null-check in getPhotosFromCursor(): data: $data | uri:$uri"
+                    )
+
             }
             cursor.close()
             return pictures
@@ -278,22 +348,25 @@ class StaticMethods {
         /**
          * returns a map Key=Video name with full path | Value = MyVideo object
          */
-        private fun getVideosFromCursor(cursor: Cursor): MutableMap<String, MyMediaObject> {
+        private fun getVideosFromCursor(
+            cursor: Cursor,
+            albumPath: String?
+        ): MutableMap<String, MyMediaObject> {
             val videos: MutableMap<String, MyMediaObject> = mutableMapOf()
 
 
             val actualVideoColumnIndex__ID: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
+                cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
             val actualVideoColumnIndexDATE_MODIFIED: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_MODIFIED)
+                cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_MODIFIED)
             val actualVideoColumnIndexSIZE: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
+                cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
             val actualVideoColumnIndexWIDTH: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH)
+                cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH)
             val actualVideoColumnIndexHEIGHT: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)
+                cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)
             val actualVideoColumnIndexDATA: Int =
-                    cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
+                cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
 
             Log.i("Files", "VIDEO EXTERNAL_URI cursor size: ${cursor.count}")
 
@@ -305,31 +378,56 @@ class StaticMethods {
                 }
 
                 val data: String? =
-                        actualVideoColumnIndexDATA.let { cursor.getString(it) }
+                    actualVideoColumnIndexDATA.let { cursor.getString(it) }
                 val dateModified: String? =
-                        actualVideoColumnIndexDATE_MODIFIED.let { cursor.getString(it) }
+                    actualVideoColumnIndexDATE_MODIFIED.let { cursor.getString(it) }
                 val size: String? = actualVideoColumnIndexSIZE.let { cursor.getString(it) }
                 val width: String? = actualVideoColumnIndexWIDTH.let { cursor.getString(it) }
                 val height: String? = actualVideoColumnIndexHEIGHT.let { cursor.getString(it) }
 
 
                 if (data != null) {
-                    videos[data] = MyMediaObject(
+                    if(albumPath == null)
+                        videos[data] = MyMediaObject(
                             uriId = id,
                             uri = uri,
-                            DATA = data,
-                            DATE_MODIFIED = dateModified,
-                            SIZE = size,
-                            WIDTH = width,
-                            HEIGHT = height,
-                            isVideo = true)
+                            fullPath = data,
+                            dateModified = dateModified,
+                            size = size,
+                            width = width,
+                            height = height,
+                            isVideo = true
+                        )
+                    else {
+                        var splitPath = data.split('/')
+                        val name = splitPath.last() ?: ""
+                        splitPath = splitPath.dropLast(1)
+                        val albumFullPath = splitPath.joinToString(separator = "/") ?: ""
+
+                        if (albumFullPath == albumPath)
+                            videos[data] = MyMediaObject(
+                                uriId = id,
+                                uri = uri,
+                                fullPath = data,
+                                dateModified = dateModified,
+                                size = size,
+                                width = width,
+                                height = height,
+                                name = name,
+                                albumFullPath = albumFullPath,
+                                isVideo = true
+                            )
+                        else Log.i("Files", "rejected data:$data, albumPath:$albumPath")
+                    }
                 } else
-                    Log.w("Files", "load failed : failed null-check in getAllPictures(): data: $data | uri:$uri")
+                    Log.w(
+                        "Files",
+                        "load failed : failed null-check in getVideosFromCursor(): data: $data | uri:$uri"
+                    )
             }
             cursor.close()
             return videos
         }
-
 
 
     }

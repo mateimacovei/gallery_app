@@ -28,24 +28,39 @@ class MyMediaObject {
     @Ignore
     var uri: Uri? = null
 
+    constructor(
+        uriId: Long? = null,
+        uri: Uri? = null,
+        fullPath: String?,
+        dateModified: String?,
+        size: String?,
+        width: String?,
+        height: String?,
+        albumFullPath: String,
+        name: String,
+        isVideo: Boolean = false
+    ) : this(uriId, uri, fullPath, dateModified, size, width, height, isVideo){
+        this.albumFullPath = albumFullPath
+        this.name = name
+    }
 
     constructor(
         uriId: Long? = null,
         uri: Uri? = null,
-        DATA: String?,
-        DATE_MODIFIED: String?,
-        SIZE: String?,
-        WIDTH: String?,
-        HEIGHT: String?,
+        fullPath: String?,
+        dateModified: String?,
+        size: String?,
+        width: String?,
+        height: String?,
         isVideo: Boolean = false
     ) {
         this.uriId = uriId
         this.uri = uri
-        this.fullPath = DATA
-        this.dateModified = DATE_MODIFIED
-        this.size = SIZE?.toDouble()
-        this.width = WIDTH
-        this.height = HEIGHT
+        this.fullPath = fullPath
+        this.dateModified = dateModified
+        this.size = size?.toDouble()
+        this.width = width
+        this.height = height
         this.isVideo = isVideo
 
         var splitPath = this.fullPath?.split('/')

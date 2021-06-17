@@ -11,8 +11,11 @@ interface TagDAO {
     @Query("SELECT * FROM Tag")
     fun getAll(): List<Tag>
 
-    @Query("SELECT * FROM Tag WHERE rowid IN (:tagsIds)")
-    fun loadAllByIds(tagsIds: IntArray): List<Tag>
+    @Query("SELECT * FROM Tag WHERE name=:name")
+    fun getByName(name: String): List<Tag>
+
+//    @Query("SELECT * FROM Tag WHERE rowid IN (:tagsIds)")
+//    fun loadAllByIds(tagsIds: IntArray): List<Tag>
 
 //    @Query("SELECT * FROM user WHERE first_name LIKE :first AND " +
 //            "last_name LIKE :last LIMIT 1")
