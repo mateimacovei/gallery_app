@@ -1,12 +1,11 @@
 package com.example.gallery_app.storageAccess
 
-import android.app.Activity
 import android.content.ContentUris
+import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
-import com.example.gallery_app.activities.ImageGridActivity
 import com.example.gallery_app.storageAccess.domain.MyMediaObject
 import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
 
@@ -36,8 +35,8 @@ class StaticMethods {
          * Second: list of pictures from the album, taking into account the sorting parameters
          * KEEPS the selection model
          */
-        fun getNewPhotoArrayForAlbum(imageGridActivity: ImageGridActivity): Pair<Boolean, List<MyMediaObject>> {
-            val oldMediaObjects = imageGridActivity.album.mediaObjects
+        fun getNewPhotoArrayForAlbum(context: Context, album: MyPhotoAlbum): Pair<Boolean, List<MyMediaObject>> {
+            val oldMediaObjects = album.mediaObjects
             var changed = false
 
 
@@ -49,22 +48,22 @@ class StaticMethods {
 //            val picturesMap: MutableMap<String, MyMediaObject> = getPhotosFromCursor(imageCursor)
 
             val sortOrderString = getSortOrderString(
-                sortBy = PreferencesFileHandler.getSortBy(imageGridActivity),
-                sortOrder = PreferencesFileHandler.getSortOrder(imageGridActivity)
+                sortBy = PreferencesFileHandler.getSortBy(context),
+                sortOrder = PreferencesFileHandler.getSortOrder(context)
             )
             val picturesMap = getPictures(
-                imageGridActivity,
-                albumPath = imageGridActivity.album.albumFullPath,
+                context,
+                albumPath = album.albumFullPath,
                 sortOrder = sortOrderString
             )
             val videosMap = getVideos(
-                imageGridActivity,
-                albumPath = imageGridActivity.album.albumFullPath,
+                context,
+                albumPath = album.albumFullPath,
                 sortOrder = sortOrderString
             )
 
-            imageGridActivity.album.nrPhotos = picturesMap.size
-            imageGridActivity.album.nrVideos = videosMap.size
+            album.nrPhotos = picturesMap.size
+            album.nrVideos = videosMap.size
             picturesMap.putAll(videosMap)
 
             for (mediaObject in oldMediaObjects)
@@ -102,12 +101,12 @@ class StaticMethods {
          * returns a map Key=picture name with full path | Value = MyPhoto object
          */
         private fun getPictures(
-            activity: Activity,
+            context: Context,
             sortOrder: String,
             albumPath: String? = null
         ): MutableMap<String, MyMediaObject> {
             val imageCursor: Cursor? =
-                getImageCursor(activity, sortOrder = sortOrder, path = albumPath)
+                getImageCursor(context, sortOrder = sortOrder, path = albumPath)
             if (imageCursor == null) {
                 Log.w("Files", "getImageCursor returned null")
                 return mutableMapOf()
@@ -119,12 +118,12 @@ class StaticMethods {
          * returns a map Key=video name with full path | Value = MyVideo object
          */
         private fun getVideos(
-            activity: Activity,
+            context: Context,
             sortOrder: String,
             albumPath: String? = null
         ): MutableMap<String, MyMediaObject> {
             val videoCursor: Cursor? =
-                getVideoCursor(activity, sortOrder = sortOrder, path = albumPath)
+                getVideoCursor(context, sortOrder = sortOrder, path = albumPath)
             if (videoCursor == null) {
                 Log.w("Files", "getVideoCursor returned null")
                 return mutableMapOf()
@@ -135,15 +134,15 @@ class StaticMethods {
         /**
          * return an List containing all the photo albums
          */
-        fun getAllAlbums(activity: Activity): ArrayList<MyPhotoAlbum> {
+        fun getAllAlbums(context: Context): ArrayList<MyPhotoAlbum> {
             val sortOrderString = getSortOrderString(
-                sortBy = PreferencesFileHandler.getSortBy(activity),
-                sortOrder = PreferencesFileHandler.getSortOrder(activity)
+                sortBy = PreferencesFileHandler.getSortBy(context),
+                sortOrder = PreferencesFileHandler.getSortOrder(context)
             )
             val picturesMap: MutableMap<String, MyMediaObject> =
-                getPictures(activity, sortOrder = sortOrderString)
+                getPictures(context, sortOrder = sortOrderString)
             val videosMap: MutableMap<String, MyMediaObject> =
-                getVideos(activity, sortOrder = sortOrderString)
+                getVideos(context, sortOrder = sortOrderString)
 
             val provAlbumMap: MutableMap<String, ArrayList<MyMediaObject>> =
                 createAlbums(picturesMap, videosMap)
@@ -217,22 +216,22 @@ class StaticMethods {
          * WARNING: filtering by path will also return sub-folders content
          */
         private fun getImageCursor(
-            activity: Activity,
+            context: Context,
             sortOrder: String?,
             path: String? = null
         ): Cursor? {
             return if (path == null)
-                activity.contentResolver.query(
+                context.contentResolver.query(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     projectionImages,
                     null, null,
                     sortOrder
                 )
             else
-                activity.contentResolver.query(
+                context.contentResolver.query(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     projectionImages,
-                    MediaStore.Files.FileColumns.DATA + " LIKE ?", arrayOf("$path%"),
+                    MediaStore.Files.FileColumns.DATA + " LIKE ?", arrayOf("$path/%"),
                     sortOrder
                 )
         }
@@ -242,19 +241,19 @@ class StaticMethods {
          * WARNING: filtering by path will also return sub-folders content
          */
         private fun getVideoCursor(
-            activity: Activity,
+            context: Context,
             sortOrder: String?,
             path: String? = null
         ): Cursor? {
             return if (path == null)
-                activity.contentResolver.query(
+                context.contentResolver.query(
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                     projectionVideos,
                     null, null,
                     sortOrder
                 )
             else
-                activity.contentResolver.query(
+                context.contentResolver.query(
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                     projectionVideos,
                     MediaStore.Files.FileColumns.DATA + " LIKE ?", arrayOf("$path%"),

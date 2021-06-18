@@ -1,11 +1,13 @@
 package com.example.gallery_app.activities
 
+import android.app.Application
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.gallery_app.IMAGE_GRID_MESSAGE
@@ -15,16 +17,19 @@ import com.example.gallery_app.uiClasses.AlbumGridAdapter
 import com.example.gallery_app.storageAccess.Box
 import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
 import com.example.gallery_app.storageAccess.StaticMethods
+import com.example.gallery_app.storageAccess.repo.Repo
 import kotlinx.android.synthetic.main.activity_album_grid.*
 
-class AlbumListViewModel : ViewModel() {
-    val albumList: MutableLiveData<ArrayList<MyPhotoAlbum>> by lazy {
-        MutableLiveData<ArrayList<MyPhotoAlbum>>()
-    }
+class AlbumListViewModel(application: Application) : AndroidViewModel (application) {
+    val albumList: MutableLiveData<ArrayList<MyPhotoAlbum>>
+    val repo: Repo
 
     init {
         Log.i("AlbumListViewModel","init entered")
+        albumList = MutableLiveData<ArrayList<MyPhotoAlbum>>()
         albumList.value = ArrayList()
+
+        repo = Repo(application)
     }
 }
 

@@ -13,6 +13,9 @@ interface AlbumDAO {
     @Query("SELECT * FROM MyPhotoAlbum")
     fun getAll(): List<MyPhotoAlbum>
 
+    @Query("SELECT * FROM MyPhotoAlbum WHERE `ignore`=:getIgnored")
+    fun getAll(getIgnored: Boolean): List<MyPhotoAlbum>
+
     @Insert
     fun insertAll(vararg myPhotoAlbum: MyPhotoAlbum)
 

@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
 class MyMediaObject {
     // I will store this one in the database, in order to get the uri from it
     @PrimaryKey(autoGenerate = false)
-    @ColumnInfo(name="rowid")
+    @ColumnInfo(name = "rowid")
     var uriId: Long? = null
     var fullPath: String? = null
     var dateModified: String? = null
@@ -39,7 +39,7 @@ class MyMediaObject {
         albumFullPath: String,
         name: String,
         isVideo: Boolean = false
-    ) : this(uriId, uri, fullPath, dateModified, size, width, height, isVideo){
+    ) : this(uriId, uri, fullPath, dateModified, size, width, height, isVideo) {
         this.albumFullPath = albumFullPath
         this.name = name
     }
@@ -70,7 +70,7 @@ class MyMediaObject {
         this.albumFullPath = splitPath?.joinToString(separator = "/") ?: ""
     }
 
-    constructor(){}
+    constructor() {}
 
     override fun toString(): String {
         return "uriId: $uriId, isVideo: $isVideo, uri: $uri |  name:$name | path/data: ${this.fullPath} | date modified:$dateModified | size:$size | width:$width | height:$height"

@@ -127,7 +127,7 @@ class ImageGridActivity : AbstractGridActivity() {
             if (nrLoaded == 2)
                 return
         }
-        val result = getNewPhotoArrayForAlbum(this)
+        val result = getNewPhotoArrayForAlbum(this, this.album)
         Log.i("Activity", "loadPicturesFromAlbum got result; shouldUpdate = ${result.first}")
         if (result.second.isEmpty()) {
             //TO DO elimina albumul din album grid
