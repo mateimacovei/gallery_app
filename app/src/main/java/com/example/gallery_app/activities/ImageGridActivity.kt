@@ -12,14 +12,17 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
-import com.example.gallery_app.*
-import com.example.gallery_app.uiClasses.AbstractMediaObjectHolder
-import com.example.gallery_app.uiClasses.ImageGridAdapter
+import com.example.gallery_app.FULLSCREEN_IMAGE_ARRAY
+import com.example.gallery_app.FULLSCREEN_IMAGE_POSITION
+import com.example.gallery_app.R
 import com.example.gallery_app.storageAccess.*
 import com.example.gallery_app.storageAccess.StaticMethods.Companion.getNewPhotoArrayForAlbum
 import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
+import com.example.gallery_app.uiClasses.AbstractMediaObjectHolder
+import com.example.gallery_app.uiClasses.ImageGridAdapter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.image_grid_menu.*
@@ -28,7 +31,7 @@ import kotlinx.android.synthetic.main.image_grid_menu.*
 class ImageGridActivity : AbstractGridActivity() {
     val holderImages: ArrayList<AbstractMediaObjectHolder> = ArrayList()
     private lateinit var imageGridAdapter: ImageGridAdapter
-    lateinit var album: MyPhotoAlbum
+    private var album: MyPhotoAlbum = MyPhotoAlbum()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,10 +41,16 @@ class ImageGridActivity : AbstractGridActivity() {
         this.onConfigurationChanged(this.resources.configuration)
         recycleViewerForImages.onFlingListener = MyOnFlingListener()
 
-        album = Box.Get(intent, IMAGE_GRID_MESSAGE)
-        Box.Remove(intent)
+        if(receivedMyPhotoAlbum!=null)
+            album = receivedMyPhotoAlbum!!
+        else {
+            Toast.makeText(this, "Error. Album was not send.", Toast.LENGTH_LONG).show()
+            finish()
+        }
+        //        album = Box.Get(intent, IMAGE_GRID_MESSAGE)
+    //        Box.Remove(intent)
 
-        Log.i("Files", "album being viewed: ${album.albumName}")
+//        Log.i("Files", "album being viewed: ${album.albumName}")) as MyPhotoAlbum
 //        image_grid_toolbar.navigationIcon //TO DO
         layoutInflater.inflate(R.layout.image_grid_menu, image_grid_toolbar)
         if (album.albumName.length <= 20)
@@ -52,6 +61,7 @@ class ImageGridActivity : AbstractGridActivity() {
         loadPicturesFromAlbum(onCreate = true)
 
         Log.i("Activity", "onCreate exit")
+
     }
 
     private fun selectAll() {
@@ -130,7 +140,7 @@ class ImageGridActivity : AbstractGridActivity() {
         val result = getNewPhotoArrayForAlbum(this, this.album)
         Log.i("Activity", "loadPicturesFromAlbum got result; shouldUpdate = ${result.first}")
         if (result.second.isEmpty()) {
-            //TO DO elimina albumul din album grid
+            //TO DO return a activity result
             finish()
         }
         if (onCreate or force or result.first) {
@@ -422,4 +432,8 @@ class ImageGridActivity : AbstractGridActivity() {
 //        Log.i("Activity","onActivityReenter called")
 //        super.onActivityReenter(resultCode, data)
 //    }
+
+    companion object{
+        var receivedMyPhotoAlbum: MyPhotoAlbum? = null
+    }
 }

@@ -3,19 +3,19 @@ package com.example.gallery_app
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.room.Room
 import com.example.gallery_app.activities.AlbumGridActivity
-import com.example.gallery_app.storageAccess.database.AppDatabase
-import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
-import com.example.gallery_app.storageAccess.domain.Tag
-import com.example.gallery_app.storageAccess.domain.TagToMediaObject
-import kotlin.concurrent.thread
+
 
 const val IMAGE_GRID_MESSAGE = "com.example.gallery_app.IMAGEGRID"
 const val FULLSCREEN_IMAGE_ARRAY = "com.example.gallery_app.FULLSCREENIMAGEARRAY"
@@ -30,8 +30,30 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         title = ""
 
-        requestPermissions()
+        val requestPermissionLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    openAlbumActivity()
+                } else {
+                    Toast.makeText(this,"Permissions not granted",Toast.LENGTH_LONG).show()
+                    finish()
+                }
+            }
+
+
+
+        requestPermissions29()
         // TO DO : request StorageMedia refresh
+//        val uri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+//
+//        startActivity(
+//            Intent(
+//                Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+//                uri
+//            )
+//        )
     }
 
     private fun openAlbumActivity() {
@@ -45,7 +67,8 @@ class MainActivity : AppCompatActivity() {
         this.onBackPressed();
     }
 
-    private fun requestPermissions() {
+
+    private fun requestPermissions29() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
             != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)

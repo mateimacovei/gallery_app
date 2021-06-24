@@ -1,6 +1,7 @@
 package com.example.gallery_app.activities
 
 import android.annotation.SuppressLint
+import android.app.RecoverableSecurityException
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
@@ -283,14 +284,33 @@ class FullscreenImageActivity : AppCompatActivity(), MyFlingListener {
     }
 
     fun deleteChipClicked(view: View) {
-        val currentPosition = viewPager.currentItem
-        Log.i("ViewPager","currentPosition: $currentPosition")
-        myMediaObjectsArray[currentPosition].uri?.let { contentResolver.delete(it, null, null) }
-        if (myMediaObjectsArray.size == 1)
-            onBackPressed()
 
-        myMediaObjectsArray.removeAt(currentPosition)
-        viewPager.adapter?.notifyItemRemoved(currentPosition) //TO DO make this work
+        val currentPosition = viewPager.currentItem
+        try {
+
+            Log.i("ViewPager", "currentPosition: $currentPosition")
+            myMediaObjectsArray[currentPosition].uri?.let { contentResolver.delete(it, null, null) }
+            if (myMediaObjectsArray.size == 1)
+                onBackPressed()
+
+            myMediaObjectsArray.removeAt(currentPosition)
+            viewPager.adapter?.notifyItemRemoved(currentPosition) //TO DO make this work
+        } catch (ex: RecoverableSecurityException) {
+//            try {
+//                val intentSender = ex.userAction.actionIntent.intentSender
+//
+//                intentSender?.let {
+//                    startIntentSenderForResult(intentSender, 0, null, 0, 0, 0, null)
+//                }
+//                myMediaObjectsArray[currentPosition].uri?.let { contentResolver.delete(it, null, null)}
+//            } catch (e: Exception) {
+                Log.e(
+                    "Files",
+                    "detete failed. message: ${ex.message}, stackTree: ${ex.stackTraceToString()}"
+                )
+                Toast.makeText(this, "Error. Delete failed.", Toast.LENGTH_LONG).show()
+//            }
+        }
 
 //        if(currentPosition == myMediaObjectsArray.size)
 //            viewPager.currentItem = currentPosition-1

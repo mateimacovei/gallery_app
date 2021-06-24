@@ -1,8 +1,10 @@
 package com.example.gallery_app.uiClasses
 
+import android.content.ContentUris
 import android.graphics.BlendMode
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +14,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.engine.GlideException
@@ -25,7 +28,7 @@ import com.example.gallery_app.activities.AlbumGridActivity
 import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
 import kotlinx.android.synthetic.main.item_album_in_grid.view.*
 
-class AlbumGridAdapter(private val context: AlbumGridActivity, private val albums: ArrayList<MyPhotoAlbum>) :
+class AlbumGridAdapter(private val context: AlbumGridActivity, val albums: ArrayList<MyPhotoAlbum>) :
     RecyclerView.Adapter<AlbumGridAdapter.ColorViewHolder>() {
     var mClickListener: MyClickListener? = null
 
@@ -39,44 +42,45 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
 
     override fun onBindViewHolder(holder: AlbumGridAdapter.ColorViewHolder, position: Int) {
         holder.album = albums[position]
-        val options: RequestOptions = RequestOptions()
-//                .centerCrop()
-                .error(R.mipmap.ic_launcher_round)
 
-        if (holder.album.mediaObjects.size > 0)
-            Glide.with(context)
-                    .load(holder.album.mediaObjects[0].uri)
-                    .apply(options)
-                    .transform(MultiTransformation(CenterCrop(), RoundedCorners(20)))
-                    .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(
-                                p0: GlideException?,
-                                p1: Any?,
-                                p2: Target<Drawable>?,
-                                p3: Boolean
-                        ): Boolean {
-                            Log.i("Files", "load failed")
-                            return false
-                        }
+        val rm = Glide.with(context)
+        val loader: RequestBuilder<Drawable> = if (holder.album.mediaObjects.size > 0)
+            rm.load(holder.album.mediaObjects[0].uri)
+        else rm.load(holder.album.uriLong?.let {
+            ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, it)
+        })
 
-                        override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                        ): Boolean {
-                            if (holder.album.selected) {
-                                resource?.setTint(Color.GRAY)
-                                resource?.setTintBlendMode(BlendMode.MODULATE)
-                            }
+        //due to glide being smart, it will work for albums taken from room even if the thumbnail picture has been deleted
+        loader.transform(MultiTransformation(CenterCrop(), RoundedCorners(20)))
+            .listener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    p0: GlideException?,
+                    p1: Any?,
+                    p2: Target<Drawable>?,
+                    p3: Boolean
+                ): Boolean {
+                    Log.i("Files", "load failed")
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    if (holder.album.selected) {
+                        resource?.setTint(Color.GRAY)
+                        resource?.setTintBlendMode(BlendMode.MODULATE)
+                    }
 //                    holder.updatePictureBySelection()
 //                    holder.imageView.drawable.setTint(Color.GREEN)
-                            return false
-                        }
+                    return false
+                }
 
-                    })
-                    .into(holder.imageView)
+            })
+            .into(holder.imageView)
 
         if (context.selectionMode) {
             holder.checkBox.isChecked = holder.album.selected
@@ -85,7 +89,7 @@ class AlbumGridAdapter(private val context: AlbumGridActivity, private val album
         }
 
         holder.albumNameTextView.text = holder.album.albumName
-        holder.albumCountTextView.text = holder.album.mediaObjects.size.toString()
+        holder.albumCountTextView.text = holder.album.size.toString()
     }
 
     override fun getItemCount(): Int {

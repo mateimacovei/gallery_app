@@ -1,58 +1,66 @@
 package com.example.gallery_app.storageAccess.domain
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import java.io.ByteArrayOutputStream
 
 
 @Entity
-class MyPhotoAlbum{
+class MyPhotoAlbum {
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name="rowid")
+    @ColumnInfo(name = "rowid")
     var rowId: Long? = null
 
     var albumFullPath: String = ""
 
-    @Ignore
-    lateinit var mediaObjects: ArrayList<MyMediaObject>
-
     var albumName: String = ""
         get() {
-            if(field=="")
+            if (field == "")
                 field = albumFullPath.split('/').last()
             return field
         }
+    var ignore: Boolean = false
+    var size: Int = 0
+    var position: Int = -1
+    var uriLong: Long? = null
+
+    @Ignore
+    var mediaObjects = ArrayList<MyMediaObject>()
 
     @Ignore
     var selected: Boolean = false
-    var ignore: Boolean = false
+
     @Ignore
     var nrPhotos: Int = 0
+
     @Ignore
     var nrVideos: Int = 0
 
-    var thumbnailPath: String = ""
 
-    constructor(albumFullPath: String, mediaObjects: ArrayList<MyMediaObject>){
+    constructor(albumFullPath: String, mediaObjects: ArrayList<MyMediaObject>) {
         this.albumFullPath = albumFullPath
         this.mediaObjects = mediaObjects
+        this.size = mediaObjects.size
+        this.uriLong = mediaObjects[0].uriId
     }
 
-    constructor(){}
-
-    constructor(albumFullPath: String, albumName: String, ignore: Boolean, thumbnailPath: String) {
+    constructor() {}
+    constructor(
+        albumFullPath: String,
+        albumName: String,
+        ignore: Boolean,
+        size: Int,
+        position: Int = -1
+    ) {
         this.albumFullPath = albumFullPath
         this.albumName = albumName
         this.ignore = ignore
-        this.thumbnailPath = thumbnailPath
+        this.size = size
+        this.position = position
     }
 
-    fun getNrSelected(): Int{
+    fun getNrSelected(): Int {
         var selectedNr = 0
         for (mediaObject in mediaObjects)
             if (mediaObject.selected)
@@ -60,18 +68,24 @@ class MyPhotoAlbum{
         return selectedNr
     }
 
+    /**
+     * checks if the size and thumbnail uriLong are different. It does not check the name or the full path
+     */
+    fun isDifferent(other: MyPhotoAlbum): Boolean {
+        return this.size != other.size || this.uriLong != other.uriLong
+    }
+
     override fun toString(): String {
-        return "MyPhotoAlbum(albumFullPath='$albumFullPath', albumName='$albumName', ignore=$ignore, thumbnailPath='$thumbnailPath')"
+        return "MyPhotoAlbum(rowId=$rowId, albumFullPath='$albumFullPath', albumName='$albumName', ignore=$ignore,size=$size, position=$position, uriLong=$uriLong)"
     }
 
-    fun encodeTobase64(image: Bitmap): String? {
-        val baos = ByteArrayOutputStream()
-        image.compress(Bitmap.CompressFormat.PNG, 90, baos)
-        return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
-    }
-
-    fun decodeBase64(input: String?): Bitmap? {
-        val decodedByte: ByteArray = Base64.decode(input, 0)
-        return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.size)
+    /**
+     * finds a album with the same full path, or returns null
+     */
+    fun findSimilar(list: List<MyPhotoAlbum>): MyPhotoAlbum? {
+        for (album in list)
+            if (this.albumFullPath.contentEquals(album.albumFullPath))
+                return album
+        return null
     }
 }

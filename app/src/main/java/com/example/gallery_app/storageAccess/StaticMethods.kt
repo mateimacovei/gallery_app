@@ -10,6 +10,7 @@ import com.example.gallery_app.storageAccess.domain.MyMediaObject
 import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
 
 class StaticMethods {
+    @Suppress("DEPRECATION")
     companion object {
         private val projectionImages = arrayOf(
             MediaStore.Images.Media._ID,
@@ -82,20 +83,6 @@ class StaticMethods {
             return Pair(changed, newPhotos)
         }
 
-//        /**
-//         * filter the map, emininating the mediaObjects in subfolders of the album
-//         */
-//        private fun fitAlbumPathMap(mediaObjectsMap: MutableMap<String, MyMediaObject>, albumFullPath: String): MutableMap<String, MyMediaObject> {
-//            val result = mutableMapOf<String, MyMediaObject>()
-//            for (photoFullPath in mediaObjectsMap.keys) {
-//                val candidate = mediaObjectsMap[photoFullPath]
-//                if (candidate?.albumFullPath == albumFullPath)
-//                    result[photoFullPath] = candidate
-//                else
-//                    Log.i("Storage","eliminated ${candidate?.albumFullPath}, not fitted with $albumFullPath")
-//            }
-//            return result
-//        }
 
         /**
          * returns a map Key=picture name with full path | Value = MyPhoto object
@@ -271,9 +258,9 @@ class StaticMethods {
             val pictures: MutableMap<String, MyMediaObject> = mutableMapOf()
 
 
-            val actualImageColumnIndex__ID: Int =
+            val actualImageColumnIndexID: Int =
                 cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-            val actualImageColumnIndexDATE_MODIFIED: Int =
+            val actualImageColumnIndexDATEMODIFIED: Int =
                 cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED)
             val actualImageColumnIndexSIZE: Int =
                 cursor.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE)
@@ -288,7 +275,7 @@ class StaticMethods {
 
             while (cursor.moveToNext()) {
 //                    val uri = actualImageColumnIndex__ID?.let { cursor1.getString(it).toUri() }
-                val id: Long = actualImageColumnIndex__ID.let { cursor.getLong(it) }
+                val id: Long = actualImageColumnIndexID.let { cursor.getLong(it) }
                 val uri: Uri = id.let {
                     ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, it)
                 }
@@ -296,7 +283,7 @@ class StaticMethods {
                 val data: String? =
                     actualImageColumnIndexDATA.let { cursor.getString(it) }
                 val dateModified: String? =
-                    actualImageColumnIndexDATE_MODIFIED.let { cursor.getString(it) }
+                    actualImageColumnIndexDATEMODIFIED.let { cursor.getString(it) }
                 val size: String? = actualImageColumnIndexSIZE.let { cursor.getString(it) }
                 val width: String? = actualImageColumnIndexWIDTH.let { cursor.getString(it) }
                 val height: String? = actualImageColumnIndexHEIGHT.let { cursor.getString(it) }
@@ -312,12 +299,12 @@ class StaticMethods {
                             size = size,
                             width = width,
                             height = height
-                        )
+                        ) //the name and albumFullPath will be set in constructor
                     else {
                         var splitPath = data.split('/')
-                        val name = splitPath.last() ?: ""
+                        val name = splitPath.last()
                         splitPath = splitPath.dropLast(1)
-                        val albumFullPath = splitPath.joinToString(separator = "/") ?: ""
+                        val albumFullPath = splitPath.joinToString(separator = "/")
 
                         if (albumFullPath == albumPath)
                             pictures[data] = MyMediaObject(
@@ -354,9 +341,9 @@ class StaticMethods {
             val videos: MutableMap<String, MyMediaObject> = mutableMapOf()
 
 
-            val actualVideoColumnIndex__ID: Int =
+            val actualVideoColumnIndexID: Int =
                 cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
-            val actualVideoColumnIndexDATE_MODIFIED: Int =
+            val actualVideoColumnIndexDATEMODIFIED: Int =
                 cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_MODIFIED)
             val actualVideoColumnIndexSIZE: Int =
                 cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
@@ -371,7 +358,7 @@ class StaticMethods {
 
             while (cursor.moveToNext()) {
 //                    val uri = actualVideoColumnIndex__ID?.let { cursor1.getString(it).toUri() }
-                val id: Long = actualVideoColumnIndex__ID.let { cursor.getLong(it) }
+                val id: Long = actualVideoColumnIndexID.let { cursor.getLong(it) }
                 val uri: Uri = id.let {
                     ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, it)
                 }
@@ -379,7 +366,7 @@ class StaticMethods {
                 val data: String? =
                     actualVideoColumnIndexDATA.let { cursor.getString(it) }
                 val dateModified: String? =
-                    actualVideoColumnIndexDATE_MODIFIED.let { cursor.getString(it) }
+                    actualVideoColumnIndexDATEMODIFIED.let { cursor.getString(it) }
                 val size: String? = actualVideoColumnIndexSIZE.let { cursor.getString(it) }
                 val width: String? = actualVideoColumnIndexWIDTH.let { cursor.getString(it) }
                 val height: String? = actualVideoColumnIndexHEIGHT.let { cursor.getString(it) }
@@ -399,9 +386,9 @@ class StaticMethods {
                         )
                     else {
                         var splitPath = data.split('/')
-                        val name = splitPath.last() ?: ""
+                        val name = splitPath.last()
                         splitPath = splitPath.dropLast(1)
-                        val albumFullPath = splitPath.joinToString(separator = "/") ?: ""
+                        val albumFullPath = splitPath.joinToString(separator = "/")
 
                         if (albumFullPath == albumPath)
                             videos[data] = MyMediaObject(

@@ -1,19 +1,16 @@
 package com.example.gallery_app.storageAccess.database
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import com.example.gallery_app.storageAccess.domain.MyPhotoAlbum
 import com.example.gallery_app.storageAccess.domain.TagToMediaObject
 
 
 @Dao
 interface AlbumDAO {
-    @Query("SELECT * FROM MyPhotoAlbum")
+    @Query("SELECT * FROM MyPhotoAlbum ORDER BY position")
     fun getAll(): List<MyPhotoAlbum>
 
-    @Query("SELECT * FROM MyPhotoAlbum WHERE `ignore`=:getIgnored")
+    @Query("SELECT * FROM MyPhotoAlbum WHERE `ignore`=:getIgnored ORDER BY position")
     fun getAll(getIgnored: Boolean): List<MyPhotoAlbum>
 
     @Insert
@@ -27,4 +24,7 @@ interface AlbumDAO {
 
     @Query("DELETE FROM MyPhotoAlbum WHERE rowid in (:idList)")
     fun deleteFromList(idList: List<Long>)
+
+    @Update
+    fun updateMyPhotoAlbum(myPhotoAlbum: MyPhotoAlbum)
 }
