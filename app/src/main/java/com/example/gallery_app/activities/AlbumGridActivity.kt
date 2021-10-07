@@ -24,10 +24,10 @@ class AlbumGridActivity : AbstractGridActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_album_grid)
+        setSupportActionBar(album_grid_toolbar)
 
         this.onConfigurationChanged(this.resources.configuration)
 
-        this.title = "Albums"
         val adapter = AlbumGridAdapter(this, ArrayList())
         adapter.setClickListener(this)
         recycleViewerForAlbums.adapter = adapter

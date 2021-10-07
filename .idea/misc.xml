@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/drawable/ic_arrow_back_24dp.xml" value="0.9230768892186646" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/drawable/ic_search_black_24dp.xml" value="0.30461537344215933" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/activity_album_grid.xml" value="0.30461537344215933" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/activity_image_grid.xml" value="0.1" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/image_grid_menu.xml" value="0.23076922230466615" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/menu/fullscreen_menu.xml" value="0.3138888888888889" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/menu/image_grid_layout_menu.xml" value="0.3138888888888889" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>

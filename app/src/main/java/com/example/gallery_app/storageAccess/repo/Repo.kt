@@ -50,7 +50,11 @@ class Repo(private val application: Application) {
      */
     fun updateAlbums(roomAlbums: MutableList<MyPhotoAlbum>): Boolean {
 //        albumDAO.deleteAll()
-        Log.i("Room","first album: ${roomAlbums[0]}")
+        try {
+            Log.i("Room","first album: ${roomAlbums[0]}")
+        } catch (ex: IndexOutOfBoundsException){
+        }
+
         var shouldUpdate = false
         val mediaStoreAlbums = getMediaStoreAlbums()
 
@@ -72,11 +76,12 @@ class Repo(private val application: Application) {
                 toDelete.add(roomAlbum.rowId!!)
         }
 
+//        album was deleted or new album was found
         if(toDelete.size>0 || mediaStoreAlbums.size>0)
             shouldUpdate = true
 
         roomAlbums.removeIf { toDelete.contains(it.rowId) }
-        //for the albums stored in the db that have since been deleted
+        //for the albums stored in the db that have since been deleted from the device
 
         roomAlbums.addAll(mediaStoreAlbums)
         if(shouldUpdate)

@@ -25,19 +25,22 @@ import com.example.gallery_app.uiClasses.AbstractMediaObjectHolder
 import com.example.gallery_app.uiClasses.ImageGridAdapter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.android.synthetic.main.activity_image_grid.*
-import kotlinx.android.synthetic.main.image_grid_menu.*
 
 
 class ImageGridActivity : AbstractGridActivity() {
     val holderImages: ArrayList<AbstractMediaObjectHolder> = ArrayList()
     private lateinit var imageGridAdapter: ImageGridAdapter
     private var album: MyPhotoAlbum = MyPhotoAlbum()
+    private var title = ""
+    private var subTitle = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_grid)
         setSupportActionBar(image_grid_toolbar)
-
+        image_grid_toolbar.setNavigationOnClickListener {
+            this.onBackPressed()
+        }
         this.onConfigurationChanged(this.resources.configuration)
         recycleViewerForImages.onFlingListener = MyOnFlingListener()
 
@@ -47,16 +50,12 @@ class ImageGridActivity : AbstractGridActivity() {
             Toast.makeText(this, "Error. Album was not send.", Toast.LENGTH_LONG).show()
             finish()
         }
-        //        album = Box.Get(intent, IMAGE_GRID_MESSAGE)
-    //        Box.Remove(intent)
 
-//        Log.i("Files", "album being viewed: ${album.albumName}")) as MyPhotoAlbum
-//        image_grid_toolbar.navigationIcon //TO DO
-        layoutInflater.inflate(R.layout.image_grid_menu, image_grid_toolbar)
-        if (album.albumName.length <= 20)
-            titleTextView.text = album.albumName
+        title = if (album.albumName.length <= 20)
+            album.albumName
         else
-            titleTextView.text = (album.albumName.subSequence(0, 19).toString() + "...")
+            (album.albumName.subSequence(0, 19).toString() + "...")
+        image_grid_toolbar.title = title
 
         loadPicturesFromAlbum(onCreate = true)
 
@@ -87,10 +86,9 @@ class ImageGridActivity : AbstractGridActivity() {
     override fun enableSelectionMode() {
         selectionMode = true
         image_grid_toolbar.visibility = View.VISIBLE
-        titleTextView.visibility = View.GONE
-        imageGridNavigationImageButton.visibility = View.GONE
-        subtitleTextView.visibility = View.GONE
         toolbarCheckBox.visibility = View.VISIBLE
+        image_grid_toolbar.title = ""
+        image_grid_toolbar.subtitle = ""
         toolbarCheckBox.isChecked = (selected == album.mediaObjects.size)
         toolbarCheckBox.text = selected.toString()
 
@@ -99,11 +97,10 @@ class ImageGridActivity : AbstractGridActivity() {
     }
 
     override fun disableSelectionMode() {
-        titleTextView.visibility = View.VISIBLE
-        subtitleTextView.visibility = View.VISIBLE
-        imageGridNavigationImageButton.visibility = View.VISIBLE
-//        this.title = album.albumName
-//        image_grid_toolbar.subtitle = album.photos.size.toString()
+        toolbarCheckBox.visibility = View.GONE
+        image_grid_toolbar.title = title
+        image_grid_toolbar.subtitle = subTitle
+
         selectionMode = false
         selected = 0
         toolbarCheckBox.isChecked = false
@@ -127,7 +124,8 @@ class ImageGridActivity : AbstractGridActivity() {
                 "1 video"
             else
                 album.nrVideos.toString() + " videos"
-        subtitleTextView.text = newSubtitle
+        subTitle = newSubtitle
+        image_grid_toolbar.subtitle = newSubtitle
     }
 
     private fun loadPicturesFromAlbum(force: Boolean = false, onCreate: Boolean = false) {
