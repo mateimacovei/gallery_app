@@ -5,9 +5,12 @@
       <map>
         <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/drawable/ic_arrow_back_24dp.xml" value="0.9230768892186646" />
         <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/drawable/ic_search_black_24dp.xml" value="0.30461537344215933" />
-        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/activity_album_grid.xml" value="0.30461537344215933" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/activity_album_grid.xml" value="0.1884498480243161" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/activity_fullscreen_image.xml" value="0.25" />
         <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/activity_image_grid.xml" value="0.1" />
         <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/image_grid_menu.xml" value="0.23076922230466615" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/item_album_in_grid.xml" value="0.35260416666666666" />
+        <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/layout/item_image_in_grid.xml" value="0.25407608695652173" />
         <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/menu/fullscreen_menu.xml" value="0.3138888888888889" />
         <entry key="..\:/Programare/01_personal/00_learning_kotlin/gallery_app/app/src/main/res/menu/image_grid_layout_menu.xml" value="0.3138888888888889" />
       </map>

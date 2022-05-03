@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<!--    needed for exif data-->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION " />
 
     <application
         android:allowBackup="true"
@@ -39,11 +41,11 @@
         <activity
             android:name=".activities.AlbumGridActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.gallery_app.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
             android:name=".activities.ImageGridActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.gallery_app.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
